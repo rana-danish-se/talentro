@@ -2,13 +2,25 @@ import User from '../models/User.model.js';
 import Profile from '../models/Profile.model.js';
 import crypto from 'crypto';
 import { generateToken } from '../utils/jwt.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../services/emailService.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/sendEmail.js';
+
+// Helper function to set cookie
+const setCookie = (res, token) => {
+  const cookieOptions = {
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    httpOnly: true, // Prevents XSS attacks
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    sameSite: 'strict', // CSRF protection
+    path: '/'
+  };
+
+  res.cookie('token', token, cookieOptions);
+};
 
 export const register = async (req, res) => {
   try {
     const { email, password, firstName, lastName } = req.body;
 
-    // Validation
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
@@ -16,19 +28,16 @@ export const register = async (req, res) => {
       });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email'
+        message: 'Account already exists.'
       });
     }
 
-    // Generate verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    // Create user (accountType defaults to 'free')
     const user = await User.create({
       email,
       password,
@@ -36,14 +45,12 @@ export const register = async (req, res) => {
       isVerified: false
     });
 
-    // Create profile
     await Profile.create({
       userId: user._id,
       firstName,
       lastName
     });
 
-    // Send verification email
     await sendVerificationEmail(email, verificationToken, firstName);
 
     res.status(201).json({
@@ -69,7 +76,6 @@ export const verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
 
-    // Find user with this verification token
     const user = await User.findOne({ verificationToken: token });
 
     if (!user) {
@@ -79,7 +85,19 @@ export const verifyEmail = async (req, res) => {
       });
     }
 
-    // Check if already verified
+    const tokenAge = Date.now() - user.createdAt.getTime();
+    const TOKEN_EXPIRY = 24 * 60 * 60 * 1000; 
+
+    if (tokenAge > TOKEN_EXPIRY) {
+      await Profile.findOneAndDelete({ userId: user._id });
+      await User.findByIdAndDelete(user._id);
+      return res.status(400).json({
+        success: false,
+        message: 'Verification link has expired. Please register again.',
+        expired: true
+      });
+    }
+
     if (user.isVerified) {
       return res.status(400).json({
         success: false,
@@ -92,10 +110,32 @@ export const verifyEmail = async (req, res) => {
     user.verificationToken = undefined;
     await user.save();
 
+    // ✅ NEW: Generate token and set cookie on successful verification
+    const jwtToken = generateToken(user._id);
+    setCookie(res, jwtToken);
+
+    // Get user profile
+    const profile = await Profile.findOne({ userId: user._id });
+
     res.status(200).json({
       success: true,
-      message: 'Email verified successfully! You can now login.',
-      type: 'email-verification'
+      message: 'Email verified successfully! You are now logged in.',
+      type: 'email-verification',
+      data: {
+        token: jwtToken,
+        user: {
+          id: user._id,
+          email: user.email,
+          accountType: user.accountType,
+          isPremium: user.isPremium(),
+          isVerified: user.isVerified,
+          profile: profile ? {
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            profilePicture: profile.profilePicture
+          } : null
+        }
+      }
     });
 
   } catch (error) {
@@ -112,7 +152,6 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -120,7 +159,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if user exists (include password for comparison)
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
@@ -130,7 +168,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if user is verified
+    // ✅ ALREADY GOOD: Handles unverified users gracefully
     if (!user.isVerified) {
       return res.status(403).json({
         success: false,
@@ -139,7 +177,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if user is active
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -147,7 +184,6 @@ export const login = async (req, res) => {
       });
     }
 
-    // Compare password
     const isPasswordMatch = await user.comparePassword(password);
 
     if (!isPasswordMatch) {
@@ -157,14 +193,14 @@ export const login = async (req, res) => {
       });
     }
 
-    // Update last active
     user.lastActive = new Date();
     await user.save();
 
-    // Generate JWT token
     const token = generateToken(user._id);
+    
+    // ✅ NEW: Set cookie on successful login
+    setCookie(res, token);
 
-    // Get user profile
     const profile = await Profile.findOne({ userId: user._id });
 
     res.status(200).json({
@@ -199,12 +235,19 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    // Update last active
     if (req.user) {
       await User.findByIdAndUpdate(req.user.id, {
         lastActive: new Date()
       });
     }
+
+    // ✅ NEW: Clear cookie on logout
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/'
+    });
 
     res.status(200).json({
       success: true,
@@ -232,7 +275,6 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    // Find user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -242,18 +284,14 @@ export const forgotPassword = async (req, res) => {
       });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
 
-    // Set reset token and expiry (1 hour)
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpire = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpire = Date.now() + 3600000; 
     await user.save();
-
-    // Get user profile for first name
+    
     const profile = await Profile.findOne({ userId: user._id });
 
-    // Send password reset email
     await sendPasswordResetEmail(
       email, 
       resetToken, 
@@ -294,7 +332,6 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Find user with valid reset token
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpire: { $gt: Date.now() }
@@ -307,7 +344,6 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Set new password
     user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -340,7 +376,6 @@ export const resendVerification = async (req, res) => {
       });
     }
 
-    // Find user
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -357,15 +392,12 @@ export const resendVerification = async (req, res) => {
       });
     }
 
-    // Generate new verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
     user.verificationToken = verificationToken;
     await user.save();
 
-    // Get user profile
     const profile = await Profile.findOne({ userId: user._id });
 
-    // Send verification email
     await sendVerificationEmail(
       email, 
       verificationToken, 
@@ -422,4 +454,3 @@ export const getCurrentUser = async (req, res) => {
     });
   }
 };
-

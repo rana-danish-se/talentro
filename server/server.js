@@ -3,7 +3,7 @@ import { configDotenv } from 'dotenv';
 import connectDB from './configs/db.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import authRoutes from './routes/auth.routes.js';
+import authRoutes from './routes/auth.route.js';
 
 // Load environment variables
 configDotenv();
@@ -39,16 +39,6 @@ app.get('/', (req, res) => {
 
 // API routes will be added here
 app.use('/api/auth', authRoutes);
-
-
-// 404 handler for undefined routes
-app.use('*', (req, res) => {
-  res.status(404).json({
-    status: 'error',
-    message: `Route ${req.originalUrl} not found`,
-  });
-});
-
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);

@@ -1,23 +1,25 @@
-import { Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footor";
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import './globals.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footor';
+import { ToastContainer } from 'react-toastify';
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata = {
-  title: "Talentro | Skill Exchange Platform",
-  description: "Learn new skills and teach others - A platform for skill exchange and growth",
+  title: 'Talentro | Skill Exchange Platform',
+  description:
+    'Learn new skills and teach others - A platform for skill exchange and growth',
 };
 
 export default function RootLayout({ children }) {
@@ -26,9 +28,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <Navbar/>
+        <Navbar />
         {children}
-        <Footer/>
+        <ToastContainer />
+        <Footer />
       </body>
     </html>
   );

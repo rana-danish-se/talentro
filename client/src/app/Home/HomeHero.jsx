@@ -65,7 +65,7 @@ const HomeHero = () => {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="flex flex-col mt-5 sm:flex-row items-center justify-center gap-4"
           >
-            <Link href="/signup">
+            <Link href="/auth/signup">
               <motion.button
                 className="w-full cursor-pointer uppercase sm:w-auto px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-md font-semibold bg-primary text-primary-foreground hover:bg-primary-hover transition-all shadow-lg"
                 whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(168, 85, 247, 0.6)' }}
