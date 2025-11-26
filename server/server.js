@@ -31,7 +31,7 @@ connectDB();
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Talentro API Server',
+    message: 'Talentro Platform Server',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
