@@ -4,6 +4,7 @@ import apiClient from '@/api/apiClient';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { Eye, EyeOff } from 'lucide-react';
 const inputClasses =
   'w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-150 ease-in-out placeholder-gray-500 text-black';
 const labelClasses = 'text-sm font-medium text-neutral-400 block mb-2';
@@ -14,10 +15,19 @@ const SignupPage = () => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await apiClient.post('/api/auth/register', {
@@ -117,21 +127,57 @@ const SignupPage = () => {
         </div>
 
         {/* Password Field */}
-        <div className="mb-8">
+        <div className="mb-6 relative">
           <label htmlFor="password" className={labelClasses}>
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            required
-            name="password"
-            placeholder="Must be at least 8 characters"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            className={inputClasses}
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              name="password"
+              placeholder="Must be at least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className={`${inputClasses} pr-10`}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Confirm Password Field */}
+        <div className="mb-8 relative">
+          <label htmlFor="confirmPassword" className={labelClasses}>
+            Confirm Password
+          </label>
+          <div className="relative">
+            <input
+              id="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              required
+              name="confirmPassword"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
+              className={`${inputClasses} pr-10`}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </div>
 
         {/* Submit Button */}

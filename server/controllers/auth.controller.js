@@ -4,13 +4,12 @@ import crypto from 'crypto';
 import { generateToken } from '../utils/jwt.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/sendEmail.js';
 
-// Helper function to set cookie
 const setCookie = (res, token) => {
   const cookieOptions = {
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    httpOnly: true, // Prevents XSS attacks
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-    sameSite: 'strict', // CSRF protection
+    expires: new Date(Date.now() +  7* 24 * 60 * 60 * 1000), 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: 'strict', 
     path: '/'
   };
 
@@ -37,7 +36,6 @@ export const register = async (req, res) => {
     }
 
     const verificationToken = crypto.randomBytes(32).toString('hex');
-
     const user = await User.create({
       email,
       password,
@@ -104,17 +102,13 @@ export const verifyEmail = async (req, res) => {
         message: 'Email already verified. Please login.'
       });
     }
-
-    // Verify user
     user.isVerified = true;
     user.verificationToken = undefined;
     await user.save();
 
-    // ✅ NEW: Generate token and set cookie on successful verification
     const jwtToken = generateToken(user._id);
     setCookie(res, jwtToken);
 
-    // Get user profile
     const profile = await Profile.findOne({ userId: user._id });
 
     res.status(200).json({

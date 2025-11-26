@@ -120,12 +120,11 @@ userSchema.pre('save', async function () {
   this.password = await bcrypt.hash(this.password, 12);
 });
 
-userSchema.pre('save', function (next) {
+userSchema.pre('save', async function () {
   if (this.isNew && !this.isVerified && this.verificationToken) {
     // Set expiry to 24 hours from creation
     this.verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
   }
-  next();
 });
 
 // Method to compare passwords

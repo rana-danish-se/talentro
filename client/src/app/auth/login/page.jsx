@@ -6,6 +6,7 @@ import apiClient from '@/api/apiClient';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { Eye, EyeOff } from 'lucide-react';
 
 // Corrected: Text color should be light for a dark-themed form background (bg-white/10)
 const inputClasses =
@@ -19,6 +20,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,21 +92,30 @@ const LoginPage = () => {
         </div>
 
         {/* Password Field */}
-        <div className="mb-2">
+        <div className="mb-2 relative">
           <label htmlFor="password" className={labelClasses}>
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            required
-            name="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-            className={inputClasses}
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              name="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className={`${inputClasses} pr-10`}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </div>
         
         {/* Forgot Password Link */}
@@ -133,7 +144,7 @@ const LoginPage = () => {
 
         {/* Sign Up Link */}
         <p className="mt-6 text-center text-neutral-400">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link
             href="/auth/signup"
             className="text-purple-500 hover:text-purple-400 font-medium hover:underline transition duration-150"

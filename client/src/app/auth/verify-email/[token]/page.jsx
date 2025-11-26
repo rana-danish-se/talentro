@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { CheckCircle, XCircle } from "lucide-react";
 import apiClient from "@/api/apiClient";
 
 export default function VerifyPage({ params }) {
@@ -49,12 +50,15 @@ export default function VerifyPage({ params }) {
 
         {status === "success" && (
           <>
-            <h1 className="text-2xl font-bold text-green-400 mb-2">Email Verified 🎉</h1>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="text-green-500 w-16 h-16" />
+            </div>
+            <h1 className="text-2xl font-bold text-green-400 mb-2">Email Verified</h1>
             <p className="text-gray-300 mb-5">{message}</p>
 
-            <Link href="/login">
-              <button className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg">
-                Go to Login
+            <Link href="/dashboard">
+              <button className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-lg cursor-pointer transition-colors duration-200">
+                Go to Dashboard
               </button>
             </Link>
           </>
@@ -62,11 +66,14 @@ export default function VerifyPage({ params }) {
 
         {status === "failed" && (
           <>
-            <h1 className="text-2xl font-bold text-red-400 mb-2">Verification Failed ❌</h1>
+            <div className="flex justify-center mb-4">
+              <XCircle className="text-red-500 w-16 h-16" />
+            </div>
+            <h1 className="text-2xl font-bold text-red-400 mb-2">Verification Failed</h1>
             <p className="text-gray-300 mb-5">{message}</p>
 
             <Link href="/">
-              <button className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg">
+              <button className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg cursor-pointer transition-colors duration-200">
                 Go Home
               </button>
             </Link>
