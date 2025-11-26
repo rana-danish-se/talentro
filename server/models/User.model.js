@@ -56,8 +56,6 @@ const userSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
-
-    // Activity Tracking
     lastActive: {
       type: Date,
       default: Date.now,

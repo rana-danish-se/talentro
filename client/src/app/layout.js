@@ -1,7 +1,6 @@
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footor';
+
 import { ToastContainer } from 'react-toastify';
 import { AuthenticationProvider } from '@/Context/Authentication';
 
@@ -30,10 +29,8 @@ export default function RootLayout({ children }) {
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <AuthenticationProvider>
-          <Navbar />
           {children}
           <ToastContainer />
-          <Footer />
         </AuthenticationProvider>
       </body>
     </html>

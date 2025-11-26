@@ -4,18 +4,11 @@ import User from '../models/User.model.js';
 export const protect = async (req, res, next) => {
   try {
     let token;
-
-    // DEBUG LOGS
-    console.log('Auth Middleware - Headers:', req.headers.authorization);
-    console.log('Auth Middleware - Cookies:', req.cookies);
-
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies.token) {
       token = req.cookies.token;
     }
-    console.log('Auth Middleware - Token found:', !!token);
-
     if (!token) {
       return res.status(401).json({
         success: false,

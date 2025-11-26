@@ -1,0 +1,437 @@
+"use client";
+import { Edit2, X, Plus, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const Information = () => {
+  const [fullName, setFullName] = useState("Rana Danish");
+  const [headline, setHeadline] = useState(
+    "Freelance MERN Stack Developer | Java + DSA + Python | Open to Remote & Freelance Work | Software Engineering Student"
+  );
+  const [location, setLocation] = useState({
+    city: "Lahore",
+    country: "Pakistan",
+  });
+
+  // Modal states
+  const [isBasicInfoModalOpen, setIsBasicInfoModalOpen] = useState(false);
+  const [isContactInfoModalOpen, setIsContactInfoModalOpen] = useState(false);
+
+  // Basic Info Form States
+  const [firstName, setFirstName] = useState("Rana");
+  const [lastName, setLastName] = useState("Danish");
+  const [editHeadline, setEditHeadline] = useState(headline);
+  const [industry, setIndustry] = useState("Information Technology");
+  const [city, setCity] = useState(location.city);
+  const [country, setCountry] = useState(location.country);
+
+  // Contact Info Form States
+  const [email] = useState("ranadanish@example.com");
+  const [phoneNumber, setPhoneNumber] = useState("+92 300 1234567");
+  const [phoneType, setPhoneType] = useState("Mobile");
+  const [websites, setWebsites] = useState([
+    { url: "https://portfolio.com", type: "Portfolio" },
+  ]);
+
+  const industries = [
+    "Information Technology",
+    "Software Development",
+    "Web Development",
+    "Data Science",
+    "Design",
+    "Marketing",
+    "Finance",
+    "Education",
+    "Healthcare",
+    "Other",
+  ];
+
+  const phoneTypes = ["Mobile", "Home", "Work"];
+
+  const websiteTypes = ["Portfolio", "Personal", "Company", "Blog", "GitHub", "LinkedIn", "Other"];
+
+  const handleSaveBasicInfo = () => {
+    setFullName(`${firstName} ${lastName}`);
+    setHeadline(editHeadline);
+    setLocation({ city, country });
+    setIsBasicInfoModalOpen(false);
+  };
+
+  const handleSaveContactInfo = () => {
+    setIsContactInfoModalOpen(false);
+  };
+
+  const addWebsite = () => {
+    setWebsites([...websites, { url: "", type: "Personal" }]);
+  };
+
+  const removeWebsite = (index) => {
+    setWebsites(websites.filter((_, i) => i !== index));
+  };
+
+  const updateWebsite = (index, field, value) => {
+    const updatedWebsites = [...websites];
+    updatedWebsites[index][field] = value;
+    setWebsites(updatedWebsites);
+  };
+
+  return (
+    <>
+      <div className="px-10 flex items-start justify-between">
+        <div className="max-w-2xl">
+          <h1 className="text-2xl md:text-4xl text-purple-500 font-bold">
+            {fullName}
+          </h1>
+          <p className="text-md mt-2">{headline}</p>
+          <div className="flex items-center gap-2 w-fit">
+            <p className="text-sm text-neutral-500 mt-2">
+              {location.city}, {location.country}
+            </p>
+            <button
+              onClick={() => setIsContactInfoModalOpen(true)}
+              className="text-sm hover:underline text-purple-500 cursor-pointer mt-2"
+            >
+              Contact Info
+            </button>
+          </div>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsBasicInfoModalOpen(true)}
+          className="text-purple-500 cursor-pointer p-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-full transition-all"
+        >
+          <Edit2 className="w-5 h-5" />
+        </motion.button>
+      </div>
+
+      {/* Basic Info Modal */}
+      <AnimatePresence>
+        {isBasicInfoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setIsBasicInfoModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Edit Basic Information
+                </h3>
+                <button
+                  onClick={() => setIsBasicInfoModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-5">
+                {/* First Name & Last Name */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                      placeholder="Enter first name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                      placeholder="Enter last name"
+                    />
+                  </div>
+                </div>
+
+                {/* Headline */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Headline *
+                  </label>
+                  <textarea
+                    value={editHeadline}
+                    onChange={(e) => setEditHeadline(e.target.value)}
+                    rows={3}
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all resize-none"
+                    placeholder="Enter your professional headline"
+                  />
+                </div>
+
+                {/* Industry */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Industry *
+                  </label>
+                  <select
+                    value={industry}
+                    onChange={(e) => setIndustry(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                  >
+                    {industries.map((ind) => (
+                      <option key={ind} value={ind}>
+                        {ind}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Location */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      City *
+                    </label>
+                    <input
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                      placeholder="Enter city"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Country *
+                    </label>
+                    <input
+                      type="text"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                      placeholder="Enter country"
+                    />
+                  </div>
+                </div>
+
+                {/* Edit Contact Info Button */}
+                <button
+                  onClick={() => {
+                    setIsBasicInfoModalOpen(false);
+                    setIsContactInfoModalOpen(true);
+                  }}
+                  className="w-full  text-purple-400 rounded-lg font-semibold  cursor-pointer text-left text-sm transition-all"
+                >
+                  Edit Contact Info
+                </button>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
+                <button
+                  onClick={() => setIsBasicInfoModalOpen(false)}
+                  className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSaveBasicInfo}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+                >
+                  Save
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Contact Info Modal */}
+      <AnimatePresence>
+        {isContactInfoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setIsContactInfoModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Edit Contact Information
+                </h3>
+                <button
+                  onClick={() => setIsContactInfoModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-5">
+                {/* Email (Read-only) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    disabled
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Email cannot be changed
+                  </p>
+                </div>
+
+                {/* Phone Number & Type */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Phone Type
+                    </label>
+                    <select
+                      value={phoneType}
+                      onChange={(e) => setPhoneType(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                    >
+                      {phoneTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Websites Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Websites
+                    </label>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={addWebsite}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Website
+                    </motion.button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {websites.map((website, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-3"
+                      >
+                        <div className="flex justify-between items-start gap-3">
+                          <div className="flex-1 space-y-3">
+                            <input
+                              type="url"
+                              value={website.url}
+                              onChange={(e) =>
+                                updateWebsite(index, "url", e.target.value)
+                              }
+                              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                              placeholder="https://example.com"
+                            />
+                            <select
+                              value={website.type}
+                              onChange={(e) =>
+                                updateWebsite(index, "type", e.target.value)
+                              }
+                              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                            >
+                              {websiteTypes.map((type) => (
+                                <option key={type} value={type}>
+                                  {type}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {websites.length > 1 && (
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => removeWebsite(index)}
+                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </motion.button>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
+                <button
+                  onClick={() => setIsContactInfoModalOpen(false)}
+                  className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSaveContactInfo}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+                >
+                  Save
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+export default Information;

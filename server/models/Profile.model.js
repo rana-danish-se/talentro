@@ -44,8 +44,6 @@ const profileSchema = new mongoose.Schema({
     type: String,
     maxlength: 2000
   },
-  
-  // Location
   location: {
     country: {
       type: String,
@@ -71,6 +69,11 @@ const profileSchema = new mongoose.Schema({
     phoneNumber: {
       type: String,
       trim: true
+    },
+    phoneType:{
+      type:String,
+      enum:['Personal','Work','Mobile'],
+      default:'Personal'
     },
     websites: [{
       url: {

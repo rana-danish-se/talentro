@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useAuth } from '../Context/Authentication';
+import { useAuth } from '@/Context/Authentication';
 import Benefits from './Home/Benefits.jsx';
 import CTA from './Home/CTA.jsx';
 import FAQ from './Home/FAQ.jsx';
