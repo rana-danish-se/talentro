@@ -3,6 +3,7 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footor';
 import { ToastContainer } from 'react-toastify';
+import { AuthenticationProvider } from '@/Context/Authentication';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -28,10 +29,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <Navbar />
-        {children}
-        <ToastContainer />
-        <Footer />
+        <AuthenticationProvider>
+          <Navbar />
+          {children}
+          <ToastContainer />
+          <Footer />
+        </AuthenticationProvider>
       </body>
     </html>
   );

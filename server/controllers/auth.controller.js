@@ -1,7 +1,7 @@
 import User from '../models/User.model.js';
 import Profile from '../models/Profile.model.js';
-import crypto from 'crypto';
 import { generateToken } from '../utils/jwt.js';
+import crypto from 'crypto';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/sendEmail.js';
 
 const setCookie = (res, token) => {
@@ -9,12 +9,15 @@ const setCookie = (res, token) => {
     expires: new Date(Date.now() +  7* 24 * 60 * 60 * 1000), 
     httpOnly: true, 
     secure: process.env.NODE_ENV === 'production', 
-    sameSite: 'strict', 
+    sameSite: 'Lax', 
     path: '/'
   };
 
   res.cookie('token', token, cookieOptions);
 };
+
+
+
 
 export const register = async (req, res) => {
   try {
@@ -118,16 +121,8 @@ export const verifyEmail = async (req, res) => {
       data: {
         token: jwtToken,
         user: {
-          id: user._id,
-          email: user.email,
-          accountType: user.accountType,
-          isPremium: user.isPremium(),
-          isVerified: user.isVerified,
-          profile: profile ? {
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            profilePicture: profile.profilePicture
-          } : null
+          ...user.toObject(),
+          profile
         }
       }
     });
@@ -203,16 +198,8 @@ export const login = async (req, res) => {
       data: {
         token,
         user: {
-          id: user._id,
-          email: user.email,
-          accountType: user.accountType,
-          isPremium: user.isPremium(),
-          isVerified: user.isVerified,
-          profile: profile ? {
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            profilePicture: profile.profilePicture
-          } : null
+          ...user.toObject(),
+          profile
         }
       }
     });
@@ -422,19 +409,8 @@ export const getCurrentUser = async (req, res) => {
       success: true,
       data: {
         user: {
-          id: user._id,
-          email: user.email,
-          accountType: user.accountType,
-          isPremium: user.isPremium(),
-          isVerified: user.isVerified,
-          isActive: user.isActive,
-          premiumExpiresAt: user.premiumExpiresAt,
-          profile: profile ? {
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            profilePicture: profile.profilePicture,
-            bio: profile.bio
-          } : null
+          ...user.toObject(),
+          profile
         }
       }
     });

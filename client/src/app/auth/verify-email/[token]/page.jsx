@@ -1,40 +1,42 @@
-"use client";
-
+"use client"
+import { useAuth } from "@/Context/Authentication";
 import { use, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { CheckCircle, XCircle } from "lucide-react";
-import apiClient from "@/api/apiClient";
 
 export default function VerifyPage({ params }) {
+  const { verifyEmail } = useAuth();
+  const router = useRouter();
   const { token } = use(params);
   const [status, setStatus] = useState("loading"); 
   const [message, setMessage] = useState("");
   useEffect(() => {
-    const verifyEmail = async () => {
+    const verify = async () => {
       try {
-        const res = await apiClient.get(`/api/auth/verify-email/${token}`);
+        const res = await verifyEmail(token);
 
-        if (res.data.success) {
+        if (res.success) {
           setStatus("success");
-          setMessage(res.data.message);
-          toast.success(res.data.message);
+          setMessage(res.message);
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 2000);
         } else {
           setStatus("failed");
-          setMessage(res.data.message);
-          toast.error(res.data.message);
+          setMessage(res.message);
         }
 
       } catch (error) {
         setStatus("failed");
-        toast.error(error.response?.data?.message || "Verification failed");
-        setMessage(error.response?.data?.message || "Verification failed");
+        setMessage("Verification failed");
       }
     };
 
-    verifyEmail();
-  }, [token]);
+    verify();
+  }, [token, verifyEmail, router]);
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-black text-white">

@@ -1,6 +1,6 @@
 'use client';
 
-import apiClient from '@/api/apiClient';
+import { useAuth } from '@/Context/Authentication';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -10,6 +10,7 @@ const inputClasses =
 const labelClasses = 'text-sm font-medium text-neutral-400 block mb-2';
 
 const SignupPage = () => {
+  const { register } = useAuth();
   const [loading, setLoading] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -29,29 +30,18 @@ const SignupPage = () => {
       return;
     }
 
-    try {
-      const res = await apiClient.post('/api/auth/register', {
-        email,
-        password,
-        firstName,
-        lastName,
-      });
+    const res = await register({
+      email,
+      password,
+      firstName,
+      lastName,
+    });
 
-      if (res.data.success) {
-        toast.success(res.data.message || 'Registration successful!');
-        setEmail('');
-        setPassword('');
-        setFirstName('');
-        setLastName('');
-      } else {
-        toast.error(res.data.message || 'Something went wrong');
-      }
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.message ||
-        'Registration failed. Please try again.';
-
-      toast.error(errorMsg);
+    if (res.success) {
+      setEmail('');
+      setPassword('');
+      setFirstName('');
+      setLastName('');
     }
 
     setLoading(false);
