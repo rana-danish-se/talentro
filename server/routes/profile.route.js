@@ -8,19 +8,36 @@ import {
   updateProfileImage,
   updatePosterImage,
 } from "../controllers/profile.controller.js";
+import {
+  getOwnContactInfo,
+  getContactInfo,
+  addContactInfo,
+  updateContactInfo,
+} from '../controllers/contact.controller.js';
 import upload from "../middlewares/multer.js";
 
 const router = express.Router();
 
-// Protected routes
+
 router.use(protect);
-router.get("/me",protect, getProfile);
+
+
+router.get("/me", getProfile); // Getting own profile
 router.post("/add", addProfile);
 router.put("/update", updateProfile);
 router.put("/image", upload.single("image"), updateProfileImage);
 router.put("/poster", upload.single("image"), updatePosterImage);
 
-// Public routes (must be last to avoid collision with /me)
-router.get("/:userId", getUserProfile);
+
+
+router.get('/contact/me', getOwnContactInfo);
+router.post('/contact/add', addContactInfo);
+router.put('/contact/update', updateContactInfo);
+
+
+router.get("/:userId", getUserProfile); 
+
+
+router.get('/:userId/contact', getContactInfo); 
 
 export default router;
