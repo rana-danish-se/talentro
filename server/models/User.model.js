@@ -1,20 +1,26 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
     // Authentication
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
+      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"],
+    },
+    slug: {
+      type: String,
+      unique: true,
+      lowercase: true,
+      index: true,
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: [true, "Password is required"],
       minlength: 6,
       select: false,
     },
@@ -22,8 +28,8 @@ const userSchema = new mongoose.Schema(
     // Account Type & Status
     accountType: {
       type: String,
-      enum: ['free', 'premium'],
-      default: 'free',
+      enum: ["free", "premium"],
+      default: "free",
     },
 
     premiumExpiresAt: {
@@ -112,13 +118,13 @@ userSchema.index({ isActive: 1 });
 userSchema.index({ isVerified: 1, createdAt: 1 });
 
 // Pre-save middleware to hash password
-userSchema.pre('save', async function () {
-  if (!this.isModified('password')) return;
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, 12);
 });
 
-userSchema.pre('save', async function () {
+userSchema.pre("save", async function () {
   if (this.isNew && !this.isVerified && this.verificationToken) {
     // Set expiry to 24 hours from creation
     this.verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -132,7 +138,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 
 // Method to check if user is premium
 userSchema.methods.isPremium = function () {
-  if (this.accountType === 'free') return false;
+  if (this.accountType === "free") return false;
   if (!this.premiumExpiresAt) return true;
   return this.premiumExpiresAt > new Date();
 };
@@ -151,7 +157,6 @@ userSchema.methods.resetConnectionRequestLimit = function () {
   }
 };
 
-// ✅ NEW: Check if verification token is expired
 userSchema.methods.isVerificationExpired = function () {
   if (!this.verificationTokenExpiry) return false;
   return new Date() > this.verificationTokenExpiry;
@@ -205,5 +210,5 @@ userSchema.methods.canViewProfileVisitors = function () {
   this.resetProfileViewLimit();
   return this.profileViewsCheckedThisWeek < this.profileViewsLimit;
 };
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 export default User;

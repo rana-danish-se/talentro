@@ -6,9 +6,7 @@ const postSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
     index: true
-  },
-  
-  // Content
+  }, 
   content: {
     text: {
       type: String,
@@ -39,9 +37,7 @@ const postSchema = new mongoose.Schema({
       }
     }]
   },
-  
-  // Post Type & Context
-  postType: {
+    postType: {
     type: String,
     enum: ['regular', 'skill-exchange', 'service-offer', 'achievement'],
     default: 'regular',
@@ -59,8 +55,6 @@ const postSchema = new mongoose.Schema({
     default: 'public',
     index: true
   },
-  
-  // Engagement Counts (Denormalized for Performance)
   likesCount: {
     type: Number,
     default: 0,
@@ -78,9 +72,7 @@ const postSchema = new mongoose.Schema({
     support: { type: Number, default: 0, min: 0 },
     insightful: { type: Number, default: 0, min: 0 },
     funny: { type: Number, default: 0, min: 0 }
-  },
-  
-  // Moderation
+  }, 
   isPinned: {
     type: Boolean,
     default: false
@@ -133,18 +125,17 @@ const postSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Indexes
 postSchema.index({ authorId: 1, createdAt: -1 });
 postSchema.index({ groupId: 1, createdAt: -1 });
 postSchema.index({ visibility: 1, createdAt: -1 });
 postSchema.index({ isScheduled: 1, scheduledFor: 1 });
 
-// Virtual for total engagement
+
 postSchema.virtual('totalEngagement').get(function() {
   return this.likesCount + this.commentsCount;
 });
 
-// Method to increment reaction count
+
 postSchema.methods.incrementReaction = function(reactionType) {
   if (this.reactionsCount.hasOwnProperty(reactionType)) {
     this.reactionsCount[reactionType]++;
@@ -152,7 +143,6 @@ postSchema.methods.incrementReaction = function(reactionType) {
   }
 };
 
-// Method to decrement reaction count
 postSchema.methods.decrementReaction = function(reactionType) {
   if (this.reactionsCount.hasOwnProperty(reactionType) && this.reactionsCount[reactionType] > 0) {
     this.reactionsCount[reactionType]--;

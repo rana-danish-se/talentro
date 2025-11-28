@@ -64,7 +64,6 @@ const serviceSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
 serviceSchema.index({ userId: 1, createdAt: -1 });
 serviceSchema.index({ category: 1 });
 serviceSchema.index({ tags: 1 });
