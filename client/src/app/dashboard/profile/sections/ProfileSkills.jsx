@@ -1,54 +1,31 @@
 "use client";
-import { Edit2, X, Plus, Trash2, Award, TrendingUp, Briefcase, GraduationCap, FolderOpen } from "lucide-react";
+import {
+  Edit2,
+  X,
+  Plus,
+  Trash2,
+  Award,
+  TrendingUp,
+  Briefcase,
+  GraduationCap,
+  FolderOpen,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useProfile } from "@/context/ProfileContext";
+import { toast } from "react-toastify";
 
 const ProfileSkills = () => {
-  // Sample data for education, experience, and projects (will come from backend)
-  const [availableEducation] = useState([
-    { id: 1, name: "Bachelor of Science - Software Engineering" },
-    { id: 2, name: "Intermediate - Computer Science" }
-  ]);
-
-  const [availableExperience] = useState([
-    { id: 1, name: "Senior Developer at Tech Corp" },
-    { id: 2, name: "Full Stack Developer at StartUp Inc" }
-  ]);
-
-  const [availableProjects] = useState([
-    { id: 1, name: "E-Commerce Platform" },
-    { id: 2, name: "AI Chat Application" },
-    { id: 3, name: "Task Management System" }
-  ]);
-
-  const [skills, setSkills] = useState([
-    {
-      id: 1,
-      name: "React.js",
-      category: "Programming & Software Development",
-      proficiencyLevel: "expert",
-      yearsOfExperience: 3,
-      usage: {
-        education: [{ name: "Bachelor of Science - Software Engineering" }],
-        work: [{ name: "Senior Developer at Tech Corp" }],
-        project: [{ name: "E-Commerce Platform" }, { name: "AI Chat Application" }]
-      },
-      endorsements: []
-    },
-    {
-      id: 2,
-      name: "Node.js",
-      category: "Programming & Software Development",
-      proficiencyLevel: "advanced",
-      yearsOfExperience: 2.5,
-      usage: {
-        education: [],
-        work: [{ name: "Full Stack Developer at StartUp Inc" }],
-        project: [{ name: "E-Commerce Platform" }]
-      },
-      endorsements: []
-    }
-  ]);
+  const {
+    skills,
+    addSkill,
+    updateSkill,
+    deleteSkill,
+    fetchSkills,
+    educations,
+    experiences,
+    projects,
+  } = useProfile();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState(null);
@@ -61,15 +38,19 @@ const ProfileSkills = () => {
     usage: {
       education: [],
       work: [],
-      project: []
-    }
+      project: [],
+    },
   });
+
+  useEffect(() => {
+    fetchSkills();
+  }, [fetchSkills]);
 
   const proficiencyLevels = [
     { value: "beginner", label: "Beginner", color: "text-blue-400" },
     { value: "intermediate", label: "Intermediate", color: "text-green-400" },
     { value: "advanced", label: "Advanced", color: "text-orange-400" },
-    { value: "expert", label: "Expert", color: "text-purple-400" }
+    { value: "expert", label: "Expert", color: "text-purple-400" },
   ];
 
   const openAddModal = () => {
@@ -81,8 +62,8 @@ const ProfileSkills = () => {
       usage: {
         education: [],
         work: [],
-        project: []
-      }
+        project: [],
+      },
     });
     setIsModalOpen(true);
   };
@@ -94,93 +75,99 @@ const ProfileSkills = () => {
       proficiencyLevel: skill.proficiencyLevel,
       yearsOfExperience: skill.yearsOfExperience,
       usage: {
-        education: skill.usage.education || [],
-        work: skill.usage.work || [],
-        project: skill.usage.project || []
-      }
+        education: skill.usage?.education || [],
+        work: skill.usage?.work || [],
+        project: skill.usage?.project || [],
+      },
     });
     setIsModalOpen(true);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleUsageChange = (type, itemName, isChecked) => {
-    setFormData(prev => {
-      const currentUsage = prev.usage[type];
+    setFormData((prev) => {
+      const currentUsage = prev.usage[type] || [];
       let newUsage;
 
       if (isChecked) {
         newUsage = [...currentUsage, { name: itemName }];
       } else {
-        newUsage = currentUsage.filter(item => item.name !== itemName);
+        newUsage = currentUsage.filter((item) => item.name !== itemName);
       }
 
       return {
         ...prev,
         usage: {
           ...prev.usage,
-          [type]: newUsage
-        }
+          [type]: newUsage,
+        },
       };
     });
   };
 
   const isItemChecked = (type, itemName) => {
-    return formData.usage[type].some(item => item.name === itemName);
+    return formData.usage[type]?.some((item) => item.name === itemName);
   };
 
-  const handleSave = () => {
-    // Print all data to console
-    console.log("=== SKILL DATA ===");
-    console.log("Skill Name:", formData.name);
-    console.log("Proficiency Level:", formData.proficiencyLevel);
-    console.log("Years of Experience:", formData.yearsOfExperience);
-    console.log("Usage - Education:", formData.usage.education);
-    console.log("Usage - Work Experience:", formData.usage.work);
-    console.log("Usage - Projects:", formData.usage.project);
-    console.log("==================");
-
+  const handleSave = async () => {
+    let result;
     if (editingSkill) {
-      setSkills(skills.map(skill => 
-        skill.id === editingSkill.id 
-          ? { ...formData, id: skill.id, category: "Programming & Software Development", endorsements: skill.endorsements }
-          : skill
-      ));
+      result = await updateSkill(editingSkill._id, formData);
     } else {
-      const newSkill = {
-        ...formData,
-        id: Date.now(),
-        category: "Programming & Software Development", // Will be calculated by backend
-        endorsements: []
-      };
-      setSkills([newSkill, ...skills]);
+      result = await addSkill(formData);
     }
-    setIsModalOpen(false);
+
+    if (result.success) {
+      toast.success(
+        editingSkill ? "Skill updated successfully" : "Skill added successfully"
+      );
+      setIsModalOpen(false);
+    } else {
+      toast.error(result.error || "Failed to save skill");
+    }
   };
 
-  const handleDelete = (id) => {
-    setSkills(skills.filter(skill => skill.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this skill?")) {
+      const result = await deleteSkill(id);
+      if (result.success) {
+        toast.success("Skill deleted successfully");
+      } else {
+        toast.error(result.error || "Failed to delete skill");
+      }
+    }
   };
 
   const getProficiencyColor = (level) => {
-    const proficiency = proficiencyLevels.find(p => p.value === level);
+    const proficiency = proficiencyLevels.find((p) => p.value === level);
     return proficiency ? proficiency.color : "text-gray-400";
   };
 
   const getProficiencyLabel = (level) => {
-    const proficiency = proficiencyLevels.find(p => p.value === level);
+    const proficiency = proficiencyLevels.find((p) => p.value === level);
     return proficiency ? proficiency.label : level;
   };
 
+  // Group skills by category
+  const groupedSkills = skills.reduce((acc, skill) => {
+    const category = skill.category || "Others";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(skill);
+    return acc;
+  }, {});
+
   return (
     <>
-      <section className='max-w-4xl bg-neutral-950 shadow-2xl my-10 border-neutral-700 border p-10 mx-auto rounded-xl overflow-hidden mt-10'>
+      <section className="max-w-4xl bg-neutral-950 shadow-2xl my-10 border-neutral-700 border p-10 mx-auto rounded-xl overflow-hidden mt-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-purple-500">
             Skills
@@ -196,9 +183,9 @@ const ProfileSkills = () => {
         </div>
 
         {/* Skills List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-8">
           {skills.length === 0 ? (
-            <div className="col-span-2 text-center py-12">
+            <div className="text-center py-12">
               <Award className="w-16 h-16 mx-auto text-gray-600 mb-4" />
               <p className="text-gray-400">No skills added yet.</p>
               <button
@@ -209,72 +196,113 @@ const ProfileSkills = () => {
               </button>
             </div>
           ) : (
-            skills.map((skill) => (
-              <motion.div
-                key={skill.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="border border-neutral-700 rounded-lg p-5 hover:border-purple-500/50 transition-all group relative"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Award className="w-5 h-5 text-purple-400" />
-                      {skill.name}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-sm font-medium ${getProficiencyColor(skill.proficiencyLevel)}`}>
-                        {getProficiencyLabel(skill.proficiencyLevel)}
-                      </span>
-                      <span className="text-gray-500">•</span>
-                      <span className="text-sm text-gray-400">
-                        {skill.yearsOfExperience} {skill.yearsOfExperience === 1 ? 'year' : 'years'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => openEditModal(skill)}
-                      className="p-2 text-purple-400 hover:bg-purple-900/30 rounded-lg transition-all"
+            Object.entries(groupedSkills).map(([category, categorySkills]) => (
+              <div key={category}>
+                <h3 className="text-xl font-semibold text-gray-300 mb-4 border-b border-neutral-800 pb-2">
+                  {category}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {categorySkills.map((skill) => (
+                    <motion.div
+                      key={skill._id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="border border-neutral-700 rounded-lg p-5 hover:border-purple-500/50 transition-all group relative"
                     >
-                      <Edit2 className="w-4 h-4" />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleDelete(skill.id)}
-                      className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </motion.button>
-                  </div>
-                </div>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                            <Award className="w-5 h-5 text-purple-400" />
+                            {skill.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span
+                              className={`text-sm font-medium ${getProficiencyColor(
+                                skill.proficiencyLevel
+                              )}`}
+                            >
+                              {getProficiencyLabel(skill.proficiencyLevel)}
+                            </span>
+                            <span className="text-gray-500">•</span>
+                            <span className="text-sm text-gray-400">
+                              {skill.yearsOfExperience}{" "}
+                              {skill.yearsOfExperience === 1 ? "year" : "years"}
+                            </span>
+                          </div>
+                        </div>
 
-                {/* Usage Summary */}
-                <div className="space-y-2 mt-3 text-xs">
-                  {skill.usage.education.length > 0 && (
-                    <div className="flex items-start gap-2 text-gray-400">
-                      <GraduationCap className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                      <span>{skill.usage.education.length} education</span>
-                    </div>
-                  )}
-                  {skill.usage.work.length > 0 && (
-                    <div className="flex items-start gap-2 text-gray-400">
-                      <Briefcase className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                      <span>{skill.usage.work.length} work experience</span>
-                    </div>
-                  )}
-                  {skill.usage.project.length > 0 && (
-                    <div className="flex items-start gap-2 text-gray-400">
-                      <FolderOpen className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                      <span>{skill.usage.project.length} projects</span>
-                    </div>
-                  )}
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => openEditModal(skill)}
+                            className="p-2 text-purple-400 hover:bg-purple-900/30 rounded-lg transition-all"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleDelete(skill._id)}
+                            className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                      </div>
+
+                      {/* Usage Summary */}
+                      <div className="space-y-2 mt-3 text-xs">
+                        {skill.usage?.education?.length > 0 && (
+                          <div className="flex items-start gap-2 text-gray-400">
+                            <GraduationCap className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                            <div className="flex flex-wrap gap-1">
+                              {skill.usage.education.map((edu, idx) => (
+                                <span
+                                  key={idx}
+                                  className="bg-neutral-800 px-1.5 py-0.5 rounded text-gray-300"
+                                >
+                                  {edu.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {skill.usage?.work?.length > 0 && (
+                          <div className="flex items-start gap-2 text-gray-400">
+                            <Briefcase className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                            <div className="flex flex-wrap gap-1">
+                              {skill.usage.work.map((work, idx) => (
+                                <span
+                                  key={idx}
+                                  className="bg-neutral-800 px-1.5 py-0.5 rounded text-gray-300"
+                                >
+                                  {work.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {skill.usage?.project?.length > 0 && (
+                          <div className="flex items-start gap-2 text-gray-400">
+                            <FolderOpen className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                            <div className="flex flex-wrap gap-1">
+                              {skill.usage.project.map((proj, idx) => (
+                                <span
+                                  key={idx}
+                                  className="bg-neutral-800 px-1.5 py-0.5 rounded text-gray-300"
+                                >
+                                  {proj.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
+              </div>
             ))
           )}
         </div>
@@ -301,7 +329,7 @@ const ProfileSkills = () => {
               {/* Modal Header */}
               <div className="sticky top-0 bg-neutral-900 border-b border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
                 <h3 className="text-2xl font-bold text-white">
-                  {editingSkill ? 'Edit Skill' : 'Add Skill'}
+                  {editingSkill ? "Edit Skill" : "Add Skill"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -343,7 +371,7 @@ const ProfileSkills = () => {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
                   >
-                    {proficiencyLevels.map(level => (
+                    {proficiencyLevels.map((level) => (
                       <option key={level.value} value={level.value}>
                         {level.label}
                       </option>
@@ -372,7 +400,7 @@ const ProfileSkills = () => {
                 {formData.name && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     className="border border-neutral-700 rounded-lg p-5 bg-neutral-800/50"
                   >
                     <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -385,24 +413,40 @@ const ProfileSkills = () => {
                       <div>
                         <div className="flex items-center gap-2 mb-3">
                           <GraduationCap className="w-5 h-5 text-purple-400" />
-                          <h5 className="font-medium text-gray-300">Education</h5>
+                          <h5 className="font-medium text-gray-300">
+                            Education
+                          </h5>
                         </div>
                         <div className="space-y-2 ml-7">
-                          {availableEducation.length === 0 ? (
-                            <p className="text-sm text-gray-500">No education entries found</p>
+                          {educations && educations.length === 0 ? (
+                            <p className="text-sm text-gray-500">
+                              No education entries found
+                            </p>
                           ) : (
-                            availableEducation.map(edu => (
+                            educations &&
+                            educations.map((edu) => (
                               <label
-                                key={edu.id}
+                                key={edu._id}
                                 className="flex items-start gap-3 p-2 rounded hover:bg-neutral-700/50 cursor-pointer transition-colors"
                               >
                                 <input
                                   type="checkbox"
-                                  checked={isItemChecked('education', edu.name)}
-                                  onChange={(e) => handleUsageChange('education', edu.name, e.target.checked)}
+                                  checked={isItemChecked(
+                                    "education",
+                                    edu.degree
+                                  )}
+                                  onChange={(e) =>
+                                    handleUsageChange(
+                                      "education",
+                                      edu.degree,
+                                      e.target.checked
+                                    )
+                                  }
                                   className="mt-0.5 w-4 h-4 text-purple-600 bg-neutral-800 border-neutral-600 rounded focus:ring-purple-500"
                                 />
-                                <span className="text-sm text-gray-300">{edu.name}</span>
+                                <span className="text-sm text-gray-300">
+                                  {edu.degree} at {edu.schoolOrUniversity}
+                                </span>
                               </label>
                             ))
                           )}
@@ -413,24 +457,37 @@ const ProfileSkills = () => {
                       <div>
                         <div className="flex items-center gap-2 mb-3">
                           <Briefcase className="w-5 h-5 text-purple-400" />
-                          <h5 className="font-medium text-gray-300">Work Experience</h5>
+                          <h5 className="font-medium text-gray-300">
+                            Work Experience
+                          </h5>
                         </div>
                         <div className="space-y-2 ml-7">
-                          {availableExperience.length === 0 ? (
-                            <p className="text-sm text-gray-500">No work experience entries found</p>
+                          {experiences && experiences.length === 0 ? (
+                            <p className="text-sm text-gray-500">
+                              No work experience entries found
+                            </p>
                           ) : (
-                            availableExperience.map(exp => (
+                            experiences &&
+                            experiences.map((exp) => (
                               <label
-                                key={exp.id}
+                                key={exp._id}
                                 className="flex items-start gap-3 p-2 rounded hover:bg-neutral-700/50 cursor-pointer transition-colors"
                               >
                                 <input
                                   type="checkbox"
-                                  checked={isItemChecked('work', exp.name)}
-                                  onChange={(e) => handleUsageChange('work', exp.name, e.target.checked)}
+                                  checked={isItemChecked("work", exp.title)}
+                                  onChange={(e) =>
+                                    handleUsageChange(
+                                      "work",
+                                      exp.title,
+                                      e.target.checked
+                                    )
+                                  }
                                   className="mt-0.5 w-4 h-4 text-purple-600 bg-neutral-800 border-neutral-600 rounded focus:ring-purple-500"
                                 />
-                                <span className="text-sm text-gray-300">{exp.name}</span>
+                                <span className="text-sm text-gray-300">
+                                  {exp.title} at {exp.company}
+                                </span>
                               </label>
                             ))
                           )}
@@ -441,24 +498,37 @@ const ProfileSkills = () => {
                       <div>
                         <div className="flex items-center gap-2 mb-3">
                           <FolderOpen className="w-5 h-5 text-purple-400" />
-                          <h5 className="font-medium text-gray-300">Projects</h5>
+                          <h5 className="font-medium text-gray-300">
+                            Projects
+                          </h5>
                         </div>
                         <div className="space-y-2 ml-7">
-                          {availableProjects.length === 0 ? (
-                            <p className="text-sm text-gray-500">No project entries found</p>
+                          {projects && projects.length === 0 ? (
+                            <p className="text-sm text-gray-500">
+                              No project entries found
+                            </p>
                           ) : (
-                            availableProjects.map(proj => (
+                            projects &&
+                            projects.map((proj) => (
                               <label
-                                key={proj.id}
+                                key={proj._id}
                                 className="flex items-start gap-3 p-2 rounded hover:bg-neutral-700/50 cursor-pointer transition-colors"
                               >
                                 <input
                                   type="checkbox"
-                                  checked={isItemChecked('project', proj.name)}
-                                  onChange={(e) => handleUsageChange('project', proj.name, e.target.checked)}
+                                  checked={isItemChecked("project", proj.name)}
+                                  onChange={(e) =>
+                                    handleUsageChange(
+                                      "project",
+                                      proj.name,
+                                      e.target.checked
+                                    )
+                                  }
                                   className="mt-0.5 w-4 h-4 text-purple-600 bg-neutral-800 border-neutral-600 rounded focus:ring-purple-500"
                                 />
-                                <span className="text-sm text-gray-300">{proj.name}</span>
+                                <span className="text-sm text-gray-300">
+                                  {proj.name}
+                                </span>
                               </label>
                             ))
                           )}
@@ -484,7 +554,7 @@ const ProfileSkills = () => {
                   disabled={!formData.name}
                   className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingSkill ? 'Update' : 'Add'} Skill
+                  {editingSkill ? "Update" : "Add"} Skill
                 </motion.button>
               </div>
             </motion.div>

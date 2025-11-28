@@ -1,38 +1,27 @@
 "use client";
-import { Edit2, X, Plus, Trash2, Briefcase, Calendar, MapPin, Building2 } from "lucide-react";
+import {
+  Edit2,
+  X,
+  Plus,
+  Trash2,
+  Briefcase,
+  Calendar,
+  MapPin,
+  Building2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useProfile } from "@/context/ProfileContext";
+import { toast } from "react-toastify";
 
 const ProfileExperience = () => {
-  const [experiences, setExperiences] = useState([
-    {
-      id: 1,
-      title: "Senior Full Stack Developer",
-      company: "Tech Innovations Inc",
-      employmentType: "full-time",
-      location: "San Francisco, CA",
-      locationType: "hybrid",
-      startDate: "2022-03-01",
-      endDate: null,
-      isCurrentlyWorking: true,
-      description: "Led development of enterprise-level web applications using React, Node.js, and MongoDB. Managed a team of 5 developers and implemented CI/CD pipelines. Reduced application load time by 40% through performance optimization.",
-      skills: ["React", "Node.js", "MongoDB", "AWS", "Docker", "Leadership"]
-    },
-    {
-      id: 2,
-      title: "Full Stack Developer",
-      company: "StartUp Solutions",
-      employmentType: "full-time",
-      location: "New York, NY",
-      locationType: "on-site",
-      startDate: "2020-01-15",
-      endDate: "2022-02-28",
-      isCurrentlyWorking: false,
-      description: "Developed and maintained multiple client-facing web applications. Collaborated with designers and product managers to deliver user-centric solutions. Implemented RESTful APIs and integrated third-party services.",
-      skills: ["JavaScript", "Express.js", "PostgreSQL", "Git", "Agile"]
-    }
-  ]);
-
+  const {
+    experiences,
+    addExperience,
+    updateExperience,
+    deleteExperience,
+    fetchExperience,
+  } = useProfile();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState(null);
 
@@ -46,7 +35,7 @@ const ProfileExperience = () => {
     endDate: "",
     isCurrentlyWorking: false,
     description: "",
-    skills: []
+    skills: [],
   });
 
   const [skillInput, setSkillInput] = useState("");
@@ -56,14 +45,18 @@ const ProfileExperience = () => {
     { value: "part-time", label: "Part-time" },
     { value: "contract", label: "Contract" },
     { value: "freelance", label: "Freelance" },
-    { value: "internship", label: "Internship" }
+    { value: "internship", label: "Internship" },
   ];
 
   const locationTypes = [
     { value: "on-site", label: "On-site" },
     { value: "remote", label: "Remote" },
-    { value: "hybrid", label: "Hybrid" }
+    { value: "hybrid", label: "Hybrid" },
   ];
+
+  useEffect(() => {
+    fetchExperience();
+  }, [fetchExperience]);
 
   const openAddModal = () => {
     setEditingExperience(null);
@@ -77,7 +70,7 @@ const ProfileExperience = () => {
       endDate: "",
       isCurrentlyWorking: false,
       description: "",
-      skills: []
+      skills: [],
     });
     setIsModalOpen(true);
   };
@@ -90,84 +83,99 @@ const ProfileExperience = () => {
       employmentType: experience.employmentType,
       location: experience.location || "",
       locationType: experience.locationType,
-      startDate: experience.startDate,
-      endDate: experience.endDate || "",
+      startDate: experience.startDate ? experience.startDate.split("T")[0] : "",
+      endDate: experience.endDate ? experience.endDate.split("T")[0] : "",
       isCurrentlyWorking: experience.isCurrentlyWorking,
       description: experience.description || "",
-      skills: experience.skills || []
+      skills: experience.skills || [],
     });
     setIsModalOpen(true);
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
 
-    if (name === 'isCurrentlyWorking' && checked) {
-      setFormData(prev => ({ ...prev, endDate: "" }));
+    if (name === "isCurrentlyWorking" && checked) {
+      setFormData((prev) => ({ ...prev, endDate: "" }));
     }
   };
 
   const addSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        skills: [...prev.skills, skillInput.trim()]
+        skills: [...prev.skills, skillInput.trim()],
       }));
       setSkillInput("");
     }
   };
 
   const removeSkill = (skill) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
+      skills: prev.skills.filter((s) => s !== skill),
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingExperience) {
-      setExperiences(experiences.map(exp => 
-        exp.id === editingExperience.id 
-          ? { ...formData, id: exp.id }
-          : exp
-      ));
+      const result = await updateExperience(editingExperience._id, formData);
+      if (result.success) {
+        toast.success("Experience updated successfully");
+        setIsModalOpen(false);
+      } else {
+        toast.error(result.error || "Failed to update experience");
+      }
     } else {
-      const newExperience = {
-        ...formData,
-        id: Date.now()
-      };
-      setExperiences([newExperience, ...experiences]);
+      const result = await addExperience(formData);
+      if (result.success) {
+        toast.success("Experience added successfully");
+        setIsModalOpen(false);
+      } else {
+        toast.error(result.error || "Failed to add experience");
+      }
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
-    setExperiences(experiences.filter(exp => exp.id !== id));
+  const handleDelete = async (id) => {
+    if (
+      window.confirm("Are you sure you want to delete this experience record?")
+    ) {
+      const result = await deleteExperience(id);
+      if (result.success) {
+        toast.success("Experience deleted successfully");
+      } else {
+        toast.error(result.error || "Failed to delete experience");
+      }
+    }
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
   };
 
   const getEmploymentTypeLabel = (type) => {
-    const employment = employmentTypes.find(e => e.value === type);
+    const employment = employmentTypes.find((e) => e.value === type);
     return employment ? employment.label : type;
   };
 
   const getLocationTypeLabel = (type) => {
-    const location = locationTypes.find(l => l.value === type);
+    const location = locationTypes.find((l) => l.value === type);
     return location ? location.label : type;
   };
 
   return (
     <>
-      <section className='max-w-4xl bg-neutral-950 shadow-2xl my-10 border-neutral-700 border p-10 mx-auto rounded-xl overflow-hidden mt-10'>
+      <section className="max-w-4xl bg-neutral-950 shadow-2xl my-10 border-neutral-700 border p-10 mx-auto rounded-xl overflow-hidden mt-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-purple-500">
             Experience
@@ -184,7 +192,7 @@ const ProfileExperience = () => {
 
         {/* Experience List */}
         <div className="space-y-6">
-          {experiences.length === 0 ? (
+          {experiences && experiences.length === 0 ? (
             <div className="text-center py-12">
               <Briefcase className="w-16 h-16 mx-auto text-gray-600 mb-4" />
               <p className="text-gray-400">No work experience added yet.</p>
@@ -196,9 +204,10 @@ const ProfileExperience = () => {
               </button>
             </div>
           ) : (
+            experiences &&
             experiences.map((experience) => (
               <motion.div
-                key={experience.id}
+                key={experience._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="border border-neutral-700 rounded-lg p-6 hover:border-purple-500/50 transition-all group"
@@ -208,24 +217,30 @@ const ProfileExperience = () => {
                     <div className="w-12 h-12 bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Briefcase className="w-6 h-6 text-purple-400" />
                     </div>
-                    
+
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-white">
                         {experience.title}
                       </h3>
                       <div className="flex items-center gap-2 text-purple-400 mt-1">
                         <Building2 className="w-4 h-4" />
-                        <span className="font-medium">{experience.company}</span>
+                        <span className="font-medium">
+                          {experience.company}
+                        </span>
                       </div>
-                      
+
                       <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 mt-2">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {formatDate(experience.startDate)} - {' '}
-                          {experience.isCurrentlyWorking ? 'Present' : formatDate(experience.endDate)}
+                          {formatDate(experience.startDate)} -{" "}
+                          {experience.isCurrentlyWorking
+                            ? "Present"
+                            : formatDate(experience.endDate)}
                         </span>
                         <span>•</span>
-                        <span>{getEmploymentTypeLabel(experience.employmentType)}</span>
+                        <span>
+                          {getEmploymentTypeLabel(experience.employmentType)}
+                        </span>
                         {experience.location && (
                           <>
                             <span>•</span>
@@ -236,15 +251,17 @@ const ProfileExperience = () => {
                           </>
                         )}
                         <span>•</span>
-                        <span className="text-purple-400">{getLocationTypeLabel(experience.locationType)}</span>
+                        <span className="text-purple-400">
+                          {getLocationTypeLabel(experience.locationType)}
+                        </span>
                       </div>
-                      
+
                       {experience.description && (
                         <p className="text-gray-300 mt-3 text-sm leading-relaxed">
                           {experience.description}
                         </p>
                       )}
-                      
+
                       {/* Skills */}
                       {experience.skills && experience.skills.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-4">
@@ -273,7 +290,7 @@ const ProfileExperience = () => {
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => handleDelete(experience.id)}
+                      onClick={() => handleDelete(experience._id)}
                       className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -307,7 +324,7 @@ const ProfileExperience = () => {
               {/* Modal Header */}
               <div className="sticky top-0 bg-neutral-900 border-b border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
                 <h3 className="text-2xl font-bold text-white">
-                  {editingExperience ? 'Edit Experience' : 'Add Experience'}
+                  {editingExperience ? "Edit Experience" : "Add Experience"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -363,7 +380,7 @@ const ProfileExperience = () => {
                       onChange={handleInputChange}
                       className="w-full px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
                     >
-                      {employmentTypes.map(type => (
+                      {employmentTypes.map((type) => (
                         <option key={type.value} value={type.value}>
                           {type.label}
                         </option>
@@ -380,7 +397,7 @@ const ProfileExperience = () => {
                       onChange={handleInputChange}
                       className="w-full px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
                     >
-                      {locationTypes.map(type => (
+                      {locationTypes.map((type) => (
                         <option key={type.value} value={type.value}>
                           {type.label}
                         </option>
@@ -444,7 +461,10 @@ const ProfileExperience = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-purple-600 bg-neutral-800 border-neutral-700 rounded focus:ring-purple-500"
                   />
-                  <label htmlFor="isCurrentlyWorking" className="text-sm text-gray-300 cursor-pointer">
+                  <label
+                    htmlFor="isCurrentlyWorking"
+                    className="text-sm text-gray-300 cursor-pointer"
+                  >
                     I am currently working in this role
                   </label>
                 </div>
@@ -478,7 +498,9 @@ const ProfileExperience = () => {
                       type="text"
                       value={skillInput}
                       onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addSkill())
+                      }
                       className="flex-1 px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
                       placeholder="Ex: React, Node.js, Leadership"
                     />
@@ -523,10 +545,12 @@ const ProfileExperience = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSave}
-                  disabled={!formData.title || !formData.company || !formData.startDate}
+                  disabled={
+                    !formData.title || !formData.company || !formData.startDate
+                  }
                   className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingExperience ? 'Update' : 'Add'} Experience
+                  {editingExperience ? "Update" : "Add"} Experience
                 </motion.button>
               </div>
             </motion.div>

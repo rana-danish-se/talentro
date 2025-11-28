@@ -55,26 +55,34 @@ const skillSchema = new mongoose.Schema(
       index: true,
     },
     usage: {
-      education: {
-        name: {
-          type: String,
+      education: [
+        {
+          name: {
+            type: String,
+          },
         },
-      },
-      work: {
-        name: {
-          type: String,
+      ],
+      work: [
+        {
+          name: {
+            type: String,
+          },
         },
-      },
-      project: {
-        name: {
-          type: String,
+      ],
+      project: [
+        {
+          name: {
+            type: String,
+          },
         },
-      },
-      other: {
-        name: {
-          type: String,
+      ],
+      other: [
+        {
+          name: {
+            type: String,
+          },
         },
-      },
+      ],
     },
     endorsements: [
       {

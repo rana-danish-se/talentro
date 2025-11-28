@@ -1,40 +1,24 @@
 "use client";
-import { Edit2, X, Plus, Trash2, FolderOpen, Calendar, ExternalLink, Github, Link2, Image, Video, Upload } from "lucide-react";
+import {
+  Edit2,
+  X,
+  Plus,
+  Trash2,
+  FolderOpen,
+  Calendar,
+  ExternalLink,
+  Github,
+  Image,
+  Upload,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useProfile } from "@/context/ProfileContext";
+import { toast } from "react-toastify";
 
 const ProfileProjects = () => {
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "E-Commerce Platform",
-      description: "A full-stack e-commerce platform built with MERN stack featuring real-time inventory management, secure payment integration with Stripe, and advanced search functionality. Implemented responsive design and optimized performance for seamless user experience.",
-      skillsUsed: ["React", "Node.js", "MongoDB", "Express", "Stripe", "Redux"],
-      media: [
-        { type: "image", url: "https://images.unsplash.com/photo-1557821552-17105176677c?w=800", thumbnail: "https://images.unsplash.com/photo-1557821552-17105176677c?w=200" }
-      ],
-      projectUrl: "https://ecommerce-demo.com",
-      githubUrl: "https://github.com/username/ecommerce",
-      startDate: "2024-01-01",
-      endDate: "2024-06-01",
-      isOngoing: false
-    },
-    {
-      id: 2,
-      name: "AI Chat Application",
-      description: "Real-time chat application powered by AI with natural language processing capabilities. Features include smart replies, sentiment analysis, and multi-language support.",
-      skillsUsed: ["Next.js", "TypeScript", "Socket.io", "OpenAI", "TailwindCSS"],
-      media: [
-        { type: "image", url: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800", thumbnail: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=200" }
-      ],
-      projectUrl: "https://ai-chat-demo.com",
-      githubUrl: "https://github.com/username/ai-chat",
-      startDate: "2024-08-01",
-      endDate: null,
-      isOngoing: true
-    }
-  ]);
-
+  const { projects, addProject, updateProject, deleteProject, fetchProjects } =
+    useProfile();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
@@ -43,16 +27,21 @@ const ProfileProjects = () => {
     name: "",
     description: "",
     skillsUsed: [],
-    media: [],
     projectUrl: "",
     githubUrl: "",
     startDate: "",
     endDate: "",
-    isOngoing: false
+    isOngoing: false,
   });
 
   const [skillInput, setSkillInput] = useState("");
-  const [mediaInput, setMediaInput] = useState({ type: "image", url: "", thumbnail: "" });
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const openAddModal = () => {
     setEditingProject(null);
@@ -60,13 +49,15 @@ const ProfileProjects = () => {
       name: "",
       description: "",
       skillsUsed: [],
-      media: [],
       projectUrl: "",
       githubUrl: "",
       startDate: "",
       endDate: "",
-      isOngoing: false
+      isOngoing: false,
     });
+    setSelectedFiles([]);
+    setPreviewUrls([]);
+    setExistingImages([]);
     setIsModalOpen(true);
   };
 
@@ -76,92 +67,139 @@ const ProfileProjects = () => {
       name: project.name,
       description: project.description,
       skillsUsed: project.skillsUsed || [],
-      media: project.media || [],
       projectUrl: project.projectUrl || "",
       githubUrl: project.githubUrl || "",
-      startDate: project.startDate || "",
-      endDate: project.endDate || "",
-      isOngoing: project.isOngoing
+      startDate: project.startDate ? project.startDate.split("T")[0] : "",
+      endDate: project.endDate ? project.endDate.split("T")[0] : "",
+      isOngoing: project.isOngoing,
     });
+    setExistingImages(project.media ? project.media.map((m) => m.url) : []);
+    setSelectedFiles([]);
+    setPreviewUrls([]);
     setIsModalOpen(true);
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
 
-    if (name === 'isOngoing' && checked) {
-      setFormData(prev => ({ ...prev, endDate: "" }));
+    if (name === "isOngoing" && checked) {
+      setFormData((prev) => ({ ...prev, endDate: "" }));
     }
   };
 
   const addSkill = () => {
     if (skillInput.trim() && !formData.skillsUsed.includes(skillInput.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        skillsUsed: [...prev.skillsUsed, skillInput.trim()]
+        skillsUsed: [...prev.skillsUsed, skillInput.trim()],
       }));
       setSkillInput("");
     }
   };
 
   const removeSkill = (skill) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      skillsUsed: prev.skillsUsed.filter(s => s !== skill)
+      skillsUsed: prev.skillsUsed.filter((s) => s !== skill),
     }));
   };
 
-  const addMedia = () => {
-    if (mediaInput.url.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        media: [...prev.media, { ...mediaInput }]
-      }));
-      setMediaInput({ type: "image", url: "", thumbnail: "" });
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    const totalImages =
+      existingImages.length + selectedFiles.length + files.length;
+
+    if (totalImages > 4) {
+      toast.error("You can only upload up to 4 images per project.");
+      return;
     }
+
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setSelectedFiles((prev) => [...prev, ...files]);
+    setPreviewUrls((prev) => [...prev, ...newPreviews]);
   };
 
-  const removeMedia = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      media: prev.media.filter((_, i) => i !== index)
-    }));
+  const removeNewImage = (index) => {
+    const newFiles = [...selectedFiles];
+    const newPreviews = [...previewUrls];
+
+    URL.revokeObjectURL(newPreviews[index]); // Cleanup
+    newFiles.splice(index, 1);
+    newPreviews.splice(index, 1);
+
+    setSelectedFiles(newFiles);
+    setPreviewUrls(newPreviews);
   };
 
-  const handleSave = () => {
+  const removeExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("description", formData.description);
+    data.append("projectUrl", formData.projectUrl);
+    data.append("githubUrl", formData.githubUrl);
+    data.append("startDate", formData.startDate);
+    data.append("endDate", formData.endDate);
+    data.append("isOngoing", formData.isOngoing);
+    data.append("skillsUsed", JSON.stringify(formData.skillsUsed));
+
+    if (existingImages.length > 0) {
+      data.append("existingMedia", JSON.stringify(existingImages));
+    }
+
+    selectedFiles.forEach((file) => {
+      data.append("images", file);
+    });
+
+    let result;
     if (editingProject) {
-      setProjects(projects.map(proj => 
-        proj.id === editingProject.id 
-          ? { ...formData, id: proj.id }
-          : proj
-      ));
+      result = await updateProject(editingProject._id, data);
     } else {
-      const newProject = {
-        ...formData,
-        id: Date.now()
-      };
-      setProjects([newProject, ...projects]);
+      result = await addProject(data);
     }
-    setIsModalOpen(false);
+
+    if (result.success) {
+      toast.success(
+        editingProject
+          ? "Project updated successfully"
+          : "Project added successfully"
+      );
+      setIsModalOpen(false);
+    } else {
+      toast.error(result.error || "Failed to save project");
+    }
   };
 
-  const handleDelete = (id) => {
-    setProjects(projects.filter(proj => proj.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this project?")) {
+      const result = await deleteProject(id);
+      if (result.success) {
+        toast.success("Project deleted successfully");
+      } else {
+        toast.error(result.error || "Failed to delete project");
+      }
+    }
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
   };
 
   return (
     <>
-      <section className='max-w-4xl bg-neutral-950 shadow-2xl my-10 border-neutral-700 border p-10 mx-auto rounded-xl overflow-hidden mt-10'>
+      <section className="max-w-4xl bg-neutral-950 shadow-2xl my-10 border-neutral-700 border p-10 mx-auto rounded-xl overflow-hidden mt-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-purple-500">
             Projects
@@ -178,7 +216,7 @@ const ProfileProjects = () => {
 
         {/* Projects List */}
         <div className="space-y-6">
-          {projects.length === 0 ? (
+          {projects && projects.length === 0 ? (
             <div className="text-center py-12">
               <FolderOpen className="w-16 h-16 mx-auto text-gray-600 mb-4" />
               <p className="text-gray-400">No projects added yet.</p>
@@ -190,21 +228,43 @@ const ProfileProjects = () => {
               </button>
             </div>
           ) : (
+            projects &&
             projects.map((project) => (
               <motion.div
-                key={project.id}
+                key={project._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="border border-neutral-700 rounded-lg overflow-hidden hover:border-purple-500/50 transition-all group"
               >
-                {/* Project Image */}
+                {/* Project Images Grid */}
                 {project.media && project.media.length > 0 && (
-                  <div className="w-full h-48 overflow-hidden bg-neutral-800">
-                    <img
-                      src={project.media[0].url}
-                      alt={project.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                  <div
+                    className={`grid gap-1 bg-neutral-900 ${
+                      project.media.length === 1
+                        ? "grid-cols-1 h-64"
+                        : project.media.length === 2
+                        ? "grid-cols-2 h-64"
+                        : project.media.length === 3
+                        ? "grid-cols-2 h-64"
+                        : "grid-cols-2 h-64"
+                    }`}
+                  >
+                    {project.media.slice(0, 4).map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`relative overflow-hidden ${
+                          project.media.length === 3 && idx === 0
+                            ? "row-span-2"
+                            : ""
+                        } ${project.media.length === 1 ? "h-full" : "h-full"}`}
+                      >
+                        <img
+                          src={item.url}
+                          alt={`${project.name} ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -217,15 +277,17 @@ const ProfileProjects = () => {
                       <div className="flex items-center gap-2 text-sm text-gray-400 mt-2">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          {formatDate(project.startDate)} - {' '}
-                          {project.isOngoing ? 'Present' : formatDate(project.endDate)}
+                          {formatDate(project.startDate)} -{" "}
+                          {project.isOngoing
+                            ? "Present"
+                            : formatDate(project.endDate)}
                         </span>
                       </div>
-                      
+
                       <p className="text-gray-300 mt-3 text-sm leading-relaxed">
                         {project.description}
                       </p>
-                      
+
                       {/* Skills */}
                       {project.skillsUsed && project.skillsUsed.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-4">
@@ -279,7 +341,7 @@ const ProfileProjects = () => {
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => handleDelete(project.id)}
+                        onClick={() => handleDelete(project._id)}
                         className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -314,7 +376,7 @@ const ProfileProjects = () => {
               {/* Modal Header */}
               <div className="sticky top-0 bg-neutral-900 border-b border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
                 <h3 className="text-2xl font-bold text-white">
-                  {editingProject ? 'Edit Project' : 'Add Project'}
+                  {editingProject ? "Edit Project" : "Add Project"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -373,7 +435,9 @@ const ProfileProjects = () => {
                       type="text"
                       value={skillInput}
                       onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addSkill())
+                      }
                       className="flex-1 px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
                       placeholder="Ex: React, Node.js"
                     />
@@ -405,60 +469,81 @@ const ProfileProjects = () => {
                   </div>
                 </div>
 
-                {/* Media */}
+                {/* Media Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Project Media
+                    Project Images (Max 4)
                   </label>
-                  <div className="space-y-3 mb-3">
-                    <select
-                      value={mediaInput.type}
-                      onChange={(e) => setMediaInput({ ...mediaInput, type: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
-                    >
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
-                      <option value="link">Link</option>
-                    </select>
-                    <div className="flex gap-2">
-                      <input
-                        type="url"
-                        value={mediaInput.url}
-                        onChange={(e) => setMediaInput({ ...mediaInput, url: e.target.value })}
-                        className="flex-1 px-4 py-2.5 border border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-neutral-800 text-white transition-all"
-                        placeholder="Media URL (Unsplash, YouTube, etc.)"
-                      />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                        onClick={addMedia}
-                        className="px-4 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor="dropzone-file"
+                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-neutral-700 border-dashed rounded-lg cursor-pointer bg-neutral-800 hover:bg-neutral-700 transition-all"
                       >
-                        Add
-                      </motion.button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {formData.media.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="relative border border-neutral-700 rounded-lg p-3 group"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          {item.type === 'image' && <Image className="w-4 h-4 text-purple-400" />}
-                          {item.type === 'video' && <Video className="w-4 h-4 text-purple-400" />}
-                          {item.type === 'link' && <Link2 className="w-4 h-4 text-purple-400" />}
-                          <span className="text-xs text-gray-400 truncate flex-1">{item.url}</span>
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-400">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            PNG, JPG or GIF (MAX. 4 images total)
+                          </p>
                         </div>
-                        <button
-                          onClick={() => removeMedia(idx)}
-                          className="absolute top-2 right-2 p-1 bg-red-500/20 text-red-400 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
+                        <input
+                          id="dropzone-file"
+                          type="file"
+                          className="hidden"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Previews */}
+                    {(existingImages.length > 0 || previewUrls.length > 0) && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {existingImages.map((url, idx) => (
+                          <div
+                            key={`existing-${idx}`}
+                            className="relative h-20 rounded-lg overflow-hidden border border-neutral-700 group"
+                          >
+                            <img
+                              src={url}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              onClick={() => removeExistingImage(idx)}
+                              className="absolute top-1 right-1 p-1 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {previewUrls.map((url, idx) => (
+                          <div
+                            key={`new-${idx}`}
+                            className="relative h-20 rounded-lg overflow-hidden border border-neutral-700 group"
+                          >
+                            <img
+                              src={url}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              onClick={() => removeNewImage(idx)}
+                              className="absolute top-1 right-1 p-1 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 
@@ -531,7 +616,10 @@ const ProfileProjects = () => {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-purple-600 bg-neutral-800 border-neutral-700 rounded focus:ring-purple-500"
                   />
-                  <label htmlFor="isOngoing" className="text-sm text-gray-300 cursor-pointer">
+                  <label
+                    htmlFor="isOngoing"
+                    className="text-sm text-gray-300 cursor-pointer"
+                  >
                     This project is ongoing
                   </label>
                 </div>
@@ -552,7 +640,7 @@ const ProfileProjects = () => {
                   disabled={!formData.name || !formData.description}
                   className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingProject ? 'Update' : 'Add'} Project
+                  {editingProject ? "Update" : "Add"} Project
                 </motion.button>
               </div>
             </motion.div>

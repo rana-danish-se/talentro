@@ -1,26 +1,22 @@
 "use client";
 import { Edit2, X, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
+import { useProfile } from "@/context/ProfileContext";
+
 const ProfileAbout = () => {
-  const [aboutContent, setAboutContent] =
-    useState(`𝘞𝘰𝘯𝘥𝘦𝘳𝘴 𝘪𝘯 𝘭𝘪𝘧𝘦, 𝘌𝘹𝘤𝘦𝘭𝘭𝘪𝘯𝘨 𝘭𝘪𝘨𝘩𝘵𝘴! 𝘓𝘢𝘣𝘰𝘳𝘪𝘰𝘶𝘴 𝘥𝘢𝘺𝘴 𝘚𝘰𝘣𝘣𝘪𝘯𝘨 𝘯𝘪𝘨𝘩𝘵𝘴! 𝘛𝘰 𝘮𝘢𝘬𝘦 𝘢 𝘥𝘪𝘧𝘧𝘦𝘳𝘦𝘯𝘤𝘦, 𝘓𝘦𝘵'𝘴 𝘊𝘰𝘯𝘲𝘶𝘦𝘳 𝘩𝘦𝘪𝘨𝘩𝘵𝘴!
+  const { profile, updateAbout } = useProfile();
+  const [aboutContent, setAboutContent] = useState("");
 
-I cordially welcome you! This is Ayesha Javed, a software engineering student at CUI, who is a Python/AI developer and Web Developer. I am off to Artificial Intelligence. I aspire to learn Machine Learning and Artificial Intelligence.
-
-**𝐏𝐲𝐭𝐡𝐨𝐧:** Data structures, methods, OOP, File handling, functional programming, Exception handling, Database connectivity(MySql and sqlite3), API handling(Request), JSON data, git and GitHub, data manipulation(numpy, pandas), GUI(Tkinter), Advance Data structures, Web Scraping (Beautiful Soup, Selenium) and automation. I have also learned Google technologies. (GCP and Firebase)
-
-**𝐖𝐞𝐛 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐦𝐞𝐧𝐭:** I build robust backend solutions using Python Flask, ensuring seamless server-side functionality. For the frontend, I craft responsive and interactive interfaces with HTML, CSS, and JavaScript.
-
-**𝐏𝐫𝐨𝐠𝐫𝐚𝐦𝐬 𝐚𝐧𝐝 𝐏𝐫𝐨𝐣𝐞𝐜𝐭𝐬:** From a simple hangman game, Tik-Tak-Toe to an Event management program, banking database project, GUI grading system, snake game, and GUI sqlite3 Project of Hostel Management and Full stack Solution 𝐒𝐨𝐥𝐚𝐢𝐞𝐥 𝐄𝐧𝐞𝐫𝐠𝐲 submitted to 𝐆𝐨𝐨𝐠𝐥𝐞 𝐒𝐨𝐥𝐮𝐭𝐢𝐨𝐧 𝐂𝐡𝐚𝐥𝐥𝐞𝐧𝐠𝐞 𝟐𝟎𝟐𝟓.
-
-**𝐥𝐞𝐚𝐫𝐧𝐢𝐧𝐠:** Machine Learning and Artificial Intelligence.
-
-**Freelancing:** I am working on AI projects.
-
-*𝘛𝘩𝘦 𝘩𝘢𝘳𝘥𝘦𝘳 𝘵𝘩𝘦 𝘣𝘢𝘵𝘵𝘭𝘦, 𝘵𝘩𝘦 𝘴𝘸𝘦𝘦𝘵𝘦𝘳 𝘵𝘩𝘦 𝘷𝘪𝘤𝘵𝘰𝘳𝘺!*`);
+  useEffect(() => {
+    if (profile?.about) {
+      setAboutContent(profile.about);
+    } else if (profile) {
+      setAboutContent("No about info added yet.");
+    }
+  }, [profile]);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [tempContent, setTempContent] = useState("");
@@ -31,9 +27,11 @@ I cordially welcome you! This is Ayesha Javed, a software engineering student at
     setIsEditModalOpen(true);
   };
 
-  const handleSave = () => {
-    setAboutContent(tempContent);
-    setIsEditModalOpen(false);
+  const handleSave = async () => {
+    const result = await updateAbout({ about: tempContent });
+    if (result.success) {
+      setIsEditModalOpen(false);
+    }
   };
 
   const handleCancel = () => {
@@ -92,7 +90,7 @@ I cordially welcome you! This is Ayesha Javed, a software engineering student at
           >
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-purple-500 hover:text-purple-400  font-medium text-sm flex cursor-pointer gap-1 transition-colors"
+              className="text-purple-500 hover:text-purple-400  cursor-pointer font-medium text-sm flex cursor-pointer gap-1 transition-colors"
             >
               {isExpanded ? "See Less" : "See More"}
             </button>
@@ -124,7 +122,7 @@ I cordially welcome you! This is Ayesha Javed, a software engineering student at
                 </h3>
                 <button
                   onClick={handleCancel}
-                  className="text-gray-400 hover:text-white p-2 hover:bg-neutral-800 rounded-full transition-all"
+                  className="text-gray-400 cursor-pointer hover:text-white p-2 hover:bg-neutral-800 rounded-full transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -150,7 +148,7 @@ I cordially welcome you! This is Ayesha Javed, a software engineering student at
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleCancel}
-                  className="px-6 py-2 bg-neutral-800 text-gray-300 rounded-lg hover:bg-neutral-700 transition-all"
+                  className="px-6 py-2 cursor-pointer bg-neutral-800 text-gray-300 rounded-lg hover:bg-neutral-700 transition-all"
                 >
                   Cancel
                 </motion.button>
@@ -158,7 +156,7 @@ I cordially welcome you! This is Ayesha Javed, a software engineering student at
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSave}
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all flex items-center gap-2"
+                  className="px-6 py-2 cursor-pointer bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all flex items-center gap-2"
                 >
                   <Save className="w-4 h-4" />
                   Save Changes

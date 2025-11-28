@@ -1,22 +1,33 @@
-'use client';
+"use client";
 
-import { Home, Users, Bell, Briefcase, MessageSquare, Sparkles, Menu, X } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import {
+  Home,
+  Users,
+  Bell,
+  Briefcase,
+  MessageSquare,
+  Sparkles,
+  Menu,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { useProfile } from "@/context/ProfileContext";
 
 const DashboardNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { profile } = useProfile();
 
   const navItems = [
-    { name: 'Home', href: '/dashboard', icon: Home },
-    { name: 'My Network', href: '/dashboard/network', icon: Users },
-    { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
-    { name: 'Jobs', href: '/dashboard/jobs', icon: Briefcase },
-    { name: 'Messaging', href: '/dashboard/messaging', icon: MessageSquare },
+    { name: "Home", href: "/dashboard", icon: Home },
+    { name: "My Network", href: "/dashboard/network", icon: Users },
+    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+    { name: "Jobs", href: "/dashboard/jobs", icon: Briefcase },
+    { name: "Messaging", href: "/dashboard/messaging", icon: MessageSquare },
   ];
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -41,39 +52,33 @@ const DashboardNavbar = () => {
           <ul className="flex gap-1 items-center">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const active = isActive(item.href);              
+              const active = isActive(item.href);
               return (
                 <li key={item.name}>
                   <Link
                     href={item.href}
                     className={`flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all duration-300 group relative ${
-                      active 
-                        ? 'bg-purple-100 dark:bg-purple-900/30' 
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
+                      active
+                        ? "bg-purple-100 dark:bg-purple-900/30"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                     }`}
                   >
-                    <Icon 
+                    <Icon
                       className={`w-6 h-6 mb-1 transition-colors duration-300 ${
-                        active 
-                          ? 'text-purple-600 dark:text-purple-400' 
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
-                      }`} 
+                        active
+                          ? "text-purple-600 dark:text-purple-400"
+                          : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                      }`}
                     />
-                    <span className={`text-xs font-medium transition-colors duration-300 ${
-                      active 
-                        ? 'text-purple-600 dark:text-purple-400 font-semibold' 
-                        : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
-                    }`}>
+                    <span
+                      className={`text-xs font-medium transition-colors duration-300 ${
+                        active
+                          ? "text-purple-600 dark:text-purple-400 font-semibold"
+                          : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                      }`}
+                    >
                       {item.name}
                     </span>
-                    {/* {active && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-purple-600 dark:bg-purple-400 rounded-full"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )} */}
                   </Link>
                 </li>
               );
@@ -84,29 +89,33 @@ const DashboardNavbar = () => {
               <Link
                 href="/dashboard/profile"
                 className={`flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all duration-300 group relative ${
-                  isActive('/dashboard/profile')
-                    ? 'bg-purple-100 dark:bg-purple-900/30' 
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
+                  isActive("/dashboard/profile")
+                    ? "bg-purple-100 dark:bg-purple-900/30"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                 }`}
               >
-                <div className={`w-7 h-7 rounded-full mb-1 overflow-hidden border-2 transition-colors duration-300 ${
-                  isActive('/dashboard/profile')
-                    ? 'border-purple-600 dark:border-purple-400'
-                    : 'border-gray-300 dark:border-gray-600 group-hover:border-purple-600 dark:group-hover:border-purple-400'
-                }`}>
+                <div
+                  className={`w-7 h-7 rounded-full mb-1 overflow-hidden border-2 transition-colors duration-300 ${
+                    isActive("/dashboard/profile")
+                      ? "border-purple-600 dark:border-purple-400"
+                      : "border-gray-300 dark:border-gray-600 group-hover:border-purple-600 dark:group-hover:border-purple-400"
+                  }`}
+                >
                   <Image
-                    src="/assets/default-avatar.jpg"
+                    src={profile?.profileImage || "/assets/default-avatar.jpg"}
                     width={28}
                     height={28}
                     alt="User Avatar"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className={`text-xs font-medium transition-colors duration-300 ${
-                  isActive('/dashboard/profile')
-                    ? 'text-purple-600 dark:text-purple-400 font-semibold' 
-                    : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400'
-                }`}>
+                <span
+                  className={`text-xs font-medium transition-colors duration-300 ${
+                    isActive("/dashboard/profile")
+                      ? "text-purple-600 dark:text-purple-400 font-semibold"
+                      : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                  }`}
+                >
                   Me
                 </span>
               </Link>
@@ -149,7 +158,7 @@ const DashboardNavbar = () => {
           <motion.div
             className="lg:hidden mt-4 pb-4"
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
@@ -157,7 +166,7 @@ const DashboardNavbar = () => {
               {navItems.map((item, index) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
-                
+
                 return (
                   <motion.li
                     key={item.name}
@@ -169,21 +178,25 @@ const DashboardNavbar = () => {
                       href={item.href}
                       onClick={() => setIsOpen(false)}
                       className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
-                        active 
-                          ? 'bg-purple-100 dark:bg-purple-900/30' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
+                        active
+                          ? "bg-purple-100 dark:bg-purple-900/30"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                       }`}
                     >
-                      <Icon className={`w-5 h-5 ${
-                        active 
-                          ? 'text-purple-600 dark:text-purple-400' 
-                          : 'text-gray-600 dark:text-gray-400'
-                      }`} />
-                      <span className={`font-medium ${
-                        active 
-                          ? 'text-purple-600 dark:text-purple-400 font-semibold' 
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}>
+                      <Icon
+                        className={`w-5 h-5 ${
+                          active
+                            ? "text-purple-600 dark:text-purple-400"
+                            : "text-gray-600 dark:text-gray-400"
+                        }`}
+                      />
+                      <span
+                        className={`font-medium ${
+                          active
+                            ? "text-purple-600 dark:text-purple-400 font-semibold"
+                            : "text-gray-700 dark:text-gray-300"
+                        }`}
+                      >
                         {item.name}
                       </span>
                     </Link>
@@ -201,25 +214,29 @@ const DashboardNavbar = () => {
                   href="/dashboard/profile"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
-                    isActive('/dashboard/profile')
-                      ? 'bg-purple-100 dark:bg-purple-900/30' 
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
+                    isActive("/dashboard/profile")
+                      ? "bg-purple-100 dark:bg-purple-900/30"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                   }`}
                 >
                   <div className="w-6 h-6 rounded-full overflow-hidden border-2 border-purple-600">
                     <Image
-                      src="/assets/default-avatar.jpg"
+                      src={
+                        profile?.profileImage || "/assets/default-avatar.jpg"
+                      }
                       width={24}
                       height={24}
                       alt="User Avatar"
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className={`font-medium ${
-                    isActive('/dashboard/profile')
-                      ? 'text-purple-600 dark:text-purple-400 font-semibold' 
-                      : 'text-gray-700 dark:text-gray-300'
-                  }`}>
+                  <span
+                    className={`font-medium ${
+                      isActive("/dashboard/profile")
+                        ? "text-purple-600 dark:text-purple-400 font-semibold"
+                        : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
                     Me
                   </span>
                 </Link>

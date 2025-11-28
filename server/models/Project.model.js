@@ -25,16 +25,12 @@ const projectSchema = new mongoose.Schema({
   media: [{
     type: {
       type: String,
-      enum: ['image', 'video', 'link'],
       required: true
     },
     url: {
       type: String,
       required: true
     },
-    thumbnail: {
-      type: String
-    }
   }],
   projectUrl: {
     type: String,
@@ -54,15 +50,9 @@ const projectSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  collaborators: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }]
 }, {
   timestamps: true
 });
-
-// Indexes
 projectSchema.index({ userId: 1, createdAt: -1 });
 
 export const Project = mongoose.model('Project', projectSchema);

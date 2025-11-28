@@ -2,23 +2,19 @@ import Profile from "../models/Profile.model.js";
 import User from "../models/User.model.js";
 import cloudinary from "../configs/cloudinary.js";
 
-// --- UTILITY FUNCTION FOR FINDING OWN PROFILE ---
 const findOwnProfile = async (userId) => {
   return await Profile.findOne({ userId });
 };
 
 export const getProfile = async (req, res) => {
   try {
-    // req.user.id is set by the 'protect' middleware
     const profile = await findOwnProfile(req.user.id);
-
     if (!profile) {
       return res.status(404).json({
         success: false,
         message: "Profile not found for this user.",
       });
     }
-
     res.status(200).json({
       success: true,
       message: "Current user profile fetched successfully.",
@@ -34,11 +30,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-/**
- * @desc Get the profile of another user by their User ID.
- * @route GET /api/v1/profile/:userId
- * @access Public/Private (depending on route definition)
- */
 export const getUserProfile = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -73,11 +64,6 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
-/**
- * @desc Update the core profile details (first name, last name, bio, etc.) for the logged-in user.
- * @route PUT /api/v1/profile/update
- * @access Private (Requires 'protect' middleware)
- */
 export const updateProfile = async (req, res) => {
   try {
     // UPDATED: Added industry, headline, city, and country to the destructured body
@@ -103,8 +89,16 @@ export const updateProfile = async (req, res) => {
     // NEW FIELDS: Added checks for new fields from the user request
     if (industry !== undefined) updatedFields.industry = industry;
     if (headline !== undefined) updatedFields.headline = headline;
-    if (city !== undefined) updatedFields.city = city;
-    if (country !== undefined) updatedFields.country = country;
+
+    // Handle nested location fields
+    if (city !== undefined) updatedFields["location.city"] = city;
+    if (country !== undefined) updatedFields["location.country"] = country;
+    if (location !== undefined && typeof location === "object") {
+      // If location is passed as an object, merge it (or specific fields)
+      if (location.city) updatedFields["location.city"] = location.city;
+      if (location.country)
+        updatedFields["location.country"] = location.country;
+    }
 
     if (Object.keys(updatedFields).length === 0) {
       return res.status(400).json({
@@ -271,6 +265,124 @@ export const updatePosterImage = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error updating poster image",
+      error: error.message,
+    });
+  }
+};
+
+export const getContactInfo = async (req, res) => {
+  try {
+    const profile = await findOwnProfile(req.user.id);
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Contact info fetched successfully.",
+      data: profile.contactInfo || {},
+    });
+  } catch (error) {
+    console.error("Get contact info error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching contact info",
+      error: error.message,
+    });
+  }
+};
+
+export const updateContactInfo = async (req, res) => {
+  try {
+    const { phoneNumber, phoneType, websites } = req.body;
+
+    const updatedFields = {};
+    if (phoneNumber !== undefined)
+      updatedFields["contactInfo.phoneNumber"] = phoneNumber;
+    if (phoneType !== undefined)
+      updatedFields["contactInfo.phoneType"] = phoneType;
+    if (websites !== undefined)
+      updatedFields["contactInfo.websites"] = websites;
+
+    const profile = await Profile.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: updatedFields },
+      { new: true, runValidators: true }
+    );
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found to update.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Contact info updated successfully.",
+      data: profile,
+    });
+  } catch (error) {
+    console.error("Update contact info error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating contact info",
+      error: error.message,
+    });
+  }
+};
+
+export const updateAbout = async (req, res) => {
+  try {
+    const { about } = req.body;
+    const profile = await Profile.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: { about } },
+      { new: true, runValidators: true }
+    );
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found to update.",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "About updated successfully.",
+      data: profile,
+    });
+  } catch (error) {
+    console.error("Update about error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating about",
+      error: error.message,
+    });
+  }
+};
+
+export const getAbout = async (req, res) => {
+  try {
+    const profile = await Profile.findOne({ userId: req.user.id });
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "About fetched successfully",
+      data: profile.about,
+    });
+  } catch (error) {
+    console.error("Get about error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting about",
       error: error.message,
     });
   }

@@ -7,6 +7,11 @@ import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
 import profileRoutes from "./routes/profile.route.js";
 
+import educationRoutes from "./routes/education.route.js";
+import experienceRoutes from "./routes/experience.route.js";
+import projectRoutes from "./routes/project.route.js";
+import skillRoutes from "./routes/skill.route.js";
+
 // Load environment variables
 configDotenv();
 
@@ -45,6 +50,10 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/education", educationRoutes);
+app.use("/api/experience", experienceRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/skills", skillRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

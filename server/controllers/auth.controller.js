@@ -65,6 +65,11 @@ export const register = async (req, res) => {
       userId: user._id,
       firstName,
       lastName,
+      about:"",
+      contactInfo:{
+        primaryEmail:email,
+        phoneNumber:""
+      },
     });
 
     await sendVerificationEmail(email, verificationToken, firstName);

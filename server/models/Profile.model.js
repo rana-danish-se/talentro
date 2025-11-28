@@ -42,7 +42,7 @@ const profileSchema = new mongoose.Schema({
   },
   about: {
     type: String,
-    maxlength: 2000
+    maxlength: 10000
   },
   location: {
     country: {
@@ -72,8 +72,7 @@ const profileSchema = new mongoose.Schema({
     },
     phoneType:{
       type:String,
-      enum:['Personal','Work','Mobile'],
-      default:'Personal'
+      default:'Mobile'
     },
     websites: [{
       url: {
@@ -82,7 +81,6 @@ const profileSchema = new mongoose.Schema({
       },
       type: {
         type: String,
-        enum: ['personal', 'portfolio', 'company', 'blog', 'other'],
         default: 'personal'
       }
     }]

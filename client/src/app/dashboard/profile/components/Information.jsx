@@ -1,16 +1,19 @@
 "use client";
 import { Edit2, X, Plus, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProfile } from "@/context/ProfileContext";
+import { toast } from "react-toastify";
 
 const Information = () => {
-  const [fullName, setFullName] = useState("Rana Danish");
-  const [headline, setHeadline] = useState(
-    "Freelance MERN Stack Developer | Java + DSA + Python | Open to Remote & Freelance Work | Software Engineering Student"
-  );
+  const { profile, updateProfile, updateContactInfo } = useProfile();
+
+  // Display states (synced from profile)
+  const [fullName, setFullName] = useState("");
+  const [headline, setHeadline] = useState("No headline");
   const [location, setLocation] = useState({
-    city: "Lahore",
-    country: "Pakistan",
+    city: "City",
+    country: "Country",
   });
 
   // Modal states
@@ -18,47 +21,162 @@ const Information = () => {
   const [isContactInfoModalOpen, setIsContactInfoModalOpen] = useState(false);
 
   // Basic Info Form States
-  const [firstName, setFirstName] = useState("Rana");
-  const [lastName, setLastName] = useState("Danish");
-  const [editHeadline, setEditHeadline] = useState(headline);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [editHeadline, setEditHeadline] = useState("");
   const [industry, setIndustry] = useState("Information Technology");
-  const [city, setCity] = useState(location.city);
-  const [country, setCountry] = useState(location.country);
-
-  // Contact Info Form States
-  const [email] = useState("ranadanish@example.com");
-  const [phoneNumber, setPhoneNumber] = useState("+92 300 1234567");
+  const [industrySearch, setIndustrySearch] = useState("");
+  const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneType, setPhoneType] = useState("Mobile");
-  const [websites, setWebsites] = useState([
-    { url: "https://portfolio.com", type: "Portfolio" },
-  ]);
+  const [websites, setWebsites] = useState([{ url: "", type: "Personal" }]);
 
   const industries = [
     "Information Technology",
     "Software Development",
     "Web Development",
     "Data Science",
-    "Design",
+    "Artificial Intelligence",
+    "Cybersecurity",
+    "Cloud Computing",
+    "Mobile App Development",
+    "FinTech",
+    "Blockchain",
+    "Gaming",
+    "IT Services & Consulting",
+    "Telecommunications",
+    "Electronics Manufacturing",
+    "Aerospace & Defense",
+    "Automotive",
+    "Manufacturing",
+    "Construction",
+    "Real Estate",
+    "Agriculture",
+    "Forestry",
+    "Fishing",
+    "Mining",
+    "Oil & Gas",
+    "Renewable Energy",
+    "Utilities",
+    "Logistics & Supply Chain",
+    "Transportation",
+    "Warehousing",
+    "Wholesale Trade",
+    "Retail",
+    "E-commerce",
+    "Banking",
+    "Insurance",
+    "Accounting",
+    "Investment / Asset Management",
+    "Business Consulting",
+    "Legal Services",
+    "Human Resources",
     "Marketing",
-    "Finance",
-    "Education",
+    "Digital Marketing",
+    "Advertising",
+    "Design",
+    "Media & Broadcasting",
+    "Film & Television",
+    "Publishing",
+    "Photography",
+    "Music & Entertainment",
     "Healthcare",
+    "Medical Devices",
+    "Biotechnology",
+    "Pharmaceuticals",
+    "Life Sciences",
+    "Research & Development",
+    "Education",
+    "EdTech",
+    "Government",
+    "Public Administration",
+    "Nonprofit / NGO",
+    "Social Services",
+    "Hospitality",
+    "Tourism",
+    "Restaurants & Food Services",
+    "Sports & Recreation",
+    "Beauty & Personal Care",
+    "Customer Support",
+    "General Services",
+    "Freelancing",
     "Other",
   ];
 
   const phoneTypes = ["Mobile", "Home", "Work"];
 
-  const websiteTypes = ["Portfolio", "Personal", "Company", "Blog", "GitHub", "LinkedIn", "Other"];
+  const websiteTypes = [
+    "Portfolio",
+    "Personal",
+    "Company",
+    "Blog",
+    "GitHub",
+    "LinkedIn",
+    "Other",
+  ];
 
-  const handleSaveBasicInfo = () => {
-    setFullName(`${firstName} ${lastName}`);
-    setHeadline(editHeadline);
-    setLocation({ city, country });
-    setIsBasicInfoModalOpen(false);
+  useEffect(() => {
+    if (profile) {
+      setFullName(`${profile.firstName || ""} ${profile.lastName || ""}`);
+      setHeadline(profile.headline || "No headline");
+      setLocation({
+        city: profile.location?.city || "City",
+        country: profile.location?.country || "Country",
+      });
+
+      // Form states
+      setFirstName(profile.firstName || "");
+      setLastName(profile.lastName || "");
+      setEditHeadline(profile.headline || "");
+      setIndustry(profile.industry || "Information Technology");
+      setIndustrySearch(profile.industry || "Information Technology");
+      setCity(profile.location?.city || "");
+      setCountry(profile.location?.country || "");
+
+      if (profile.contactInfo) {
+        setEmail(profile.contactInfo.primaryEmail || "");
+        setPhoneNumber(profile.contactInfo.phoneNumber || "");
+        setPhoneType(profile.contactInfo.phoneType || "Mobile");
+        if (
+          profile.contactInfo.websites &&
+          profile.contactInfo.websites.length > 0
+        ) {
+          setWebsites(profile.contactInfo.websites);
+        }
+      }
+    }
+  }, [profile]);
+
+  const handleSaveBasicInfo = async () => {
+    const updateData = {
+      firstName,
+      lastName,
+      headline: editHeadline,
+      industry,
+      city,
+      country,
+    };
+    const result = await updateProfile(updateData);
+    if (result.success) {
+      toast.success("Profile updated successfully.");
+      setIsBasicInfoModalOpen(false);
+    }
   };
 
-  const handleSaveContactInfo = () => {
-    setIsContactInfoModalOpen(false);
+  const handleSaveContactInfo = async () => {
+    const updateData = {
+      phoneNumber,
+      phoneType,
+      websites,
+    };
+
+    const result = await updateContactInfo(updateData);
+    if (result.success) {
+      setIsContactInfoModalOpen(false);
+    }
   };
 
   const addWebsite = () => {
@@ -132,7 +250,7 @@ const Information = () => {
                   onClick={() => setIsBasicInfoModalOpen(false)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <X className="w-5 h-5 text-gray-500 cursor-pointer dark:text-gray-400" />
                 </button>
               </div>
 
@@ -181,21 +299,66 @@ const Information = () => {
                 </div>
 
                 {/* Industry */}
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Industry *
                   </label>
-                  <select
-                    value={industry}
-                    onChange={(e) => setIndustry(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-                  >
-                    {industries.map((ind) => (
-                      <option key={ind} value={ind}>
-                        {ind}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={industrySearch}
+                      onChange={(e) => {
+                        setIndustrySearch(e.target.value);
+                        setIndustry(e.target.value);
+                        setShowIndustryDropdown(true);
+                      }}
+                      onFocus={() => setShowIndustryDropdown(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowIndustryDropdown(false), 200)
+                      }
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                      placeholder="Search or type industry..."
+                    />
+                    <AnimatePresence>
+                      {showIndustryDropdown && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        >
+                          {industries
+                            .filter((ind) =>
+                              ind
+                                .toLowerCase()
+                                .includes(industrySearch.toLowerCase())
+                            )
+                            .map((ind) => (
+                              <button
+                                key={ind}
+                                onClick={() => {
+                                  setIndustry(ind);
+                                  setIndustrySearch(ind);
+                                  setShowIndustryDropdown(false);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-700 dark:text-gray-300 transition-colors"
+                              >
+                                {ind}
+                              </button>
+                            ))}
+                          {industries.filter((ind) =>
+                            ind
+                              .toLowerCase()
+                              .includes(industrySearch.toLowerCase())
+                          ).length === 0 && (
+                            <div className="px-4 py-2 text-gray-500 dark:text-gray-400">
+                              No matches found
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 {/* Location */}
@@ -242,7 +405,7 @@ const Information = () => {
               <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end gap-3">
                 <button
                   onClick={() => setIsBasicInfoModalOpen(false)}
-                  className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                  className="px-6 py-2.5 cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                 >
                   Cancel
                 </button>
@@ -250,7 +413,7 @@ const Information = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleSaveBasicInfo}
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+                  className="px-6 py-2.5 cursor-pointer bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
                 >
                   Save
                 </motion.button>
