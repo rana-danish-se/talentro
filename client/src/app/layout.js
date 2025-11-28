@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import { AuthenticationProvider } from "@/context/Authentication";
 import { ProfileProvider } from "@/context/ProfileContext";
+import { PostProvider } from "@/context/PostContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,8 +32,10 @@ export default function RootLayout({ children }) {
       >
         <AuthenticationProvider>
           <ProfileProvider>
-            {children}
-            <ToastContainer />
+            <PostProvider>
+              {children}
+              <ToastContainer />
+            </PostProvider>
           </ProfileProvider>
         </AuthenticationProvider>
       </body>

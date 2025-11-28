@@ -23,25 +23,10 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true
       },
-      thumbnail: {
-        type: String
-      },
       duration: {
         type: Number
       },
-      width: {
-        type: Number
-      },
-      height: {
-        type: Number
-      }
     }]
-  },
-    postType: {
-    type: String,
-    enum: ['regular', 'skill-exchange', 'service-offer', 'achievement'],
-    default: 'regular',
-    index: true
   },
   groupId: {
     type: mongoose.Schema.Types.ObjectId,
