@@ -1,3 +1,4 @@
+import { ProfileProvider } from "@/context/ProfileContext";
 import DashboardNavbar from "./components/DashboardNavbar";
 export const metadata = {
   title: "Talentro | Dashboard",

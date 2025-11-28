@@ -1,5 +1,5 @@
-"use client"
-import { useAuth } from "@/Context/Authentication";
+"use client";
+import { useAuth } from "@/context/Authentication";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -11,7 +11,7 @@ export default function VerifyPage({ params }) {
   const { verifyEmail } = useAuth();
   const router = useRouter();
   const { token } = use(params);
-  const [status, setStatus] = useState("loading"); 
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
   useEffect(() => {
     const verify = async () => {
@@ -22,13 +22,12 @@ export default function VerifyPage({ params }) {
           setStatus("success");
           setMessage(res.message);
           setTimeout(() => {
-            router.push('/dashboard');
+            router.push("/dashboard");
           }, 2000);
         } else {
           setStatus("failed");
           setMessage(res.message);
         }
-
       } catch (error) {
         setStatus("failed");
         setMessage("Verification failed");
@@ -41,11 +40,12 @@ export default function VerifyPage({ params }) {
   return (
     <main className="flex items-center justify-center min-h-screen bg-black text-white">
       <div className="bg-gray-900 p-10 rounded-xl shadow-xl w-full max-w-md text-center">
-
         {status === "loading" && (
           <>
             <h1 className="text-2xl font-bold mb-4">Verifying your email...</h1>
-            <p className="text-gray-400">Please wait while we confirm your account.</p>
+            <p className="text-gray-400">
+              Please wait while we confirm your account.
+            </p>
             <div className="loader mt-6 mx-auto border-4 border-gray-700 border-t-white rounded-full w-10 h-10 animate-spin"></div>
           </>
         )}
@@ -55,7 +55,9 @@ export default function VerifyPage({ params }) {
             <div className="flex justify-center mb-4">
               <CheckCircle className="text-green-500 w-16 h-16" />
             </div>
-            <h1 className="text-2xl font-bold text-green-400 mb-2">Email Verified</h1>
+            <h1 className="text-2xl font-bold text-green-400 mb-2">
+              Email Verified
+            </h1>
             <p className="text-gray-300 mb-5">{message}</p>
 
             <Link href="/dashboard">
@@ -71,7 +73,9 @@ export default function VerifyPage({ params }) {
             <div className="flex justify-center mb-4">
               <XCircle className="text-red-500 w-16 h-16" />
             </div>
-            <h1 className="text-2xl font-bold text-red-400 mb-2">Verification Failed</h1>
+            <h1 className="text-2xl font-bold text-red-400 mb-2">
+              Verification Failed
+            </h1>
             <p className="text-gray-300 mb-5">{message}</p>
 
             <Link href="/">

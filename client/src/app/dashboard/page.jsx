@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../../Context/Authentication";
+import { useAuth } from "../../context/Authentication";
 import PostCreation from "./sections/PostCreation";
 import Feed from "./sections/Feed";
 import ProfileCard from "./components/ProfileCard";

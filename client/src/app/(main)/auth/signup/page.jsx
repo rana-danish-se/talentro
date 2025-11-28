@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { useAuth } from '@/Context/Authentication';
-import Link from 'next/link';
-import { useState } from 'react';
-import { toast } from 'react-toastify';
-import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from "@/context/Authentication";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 const inputClasses =
-  'w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-150 ease-in-out placeholder-gray-500 text-black';
-const labelClasses = 'text-sm font-medium text-neutral-400 block mb-2';
+  "w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-150 ease-in-out placeholder-gray-500 text-black";
+const labelClasses = "text-sm font-medium text-neutral-400 block mb-2";
 
 const SignupPage = () => {
   const { register } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -25,7 +25,7 @@ const SignupPage = () => {
     setLoading(true);
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error("Passwords do not match");
       setLoading(false);
       return;
     }
@@ -38,10 +38,10 @@ const SignupPage = () => {
     });
 
     if (res.success) {
-      setEmail('');
-      setPassword('');
-      setFirstName('');
-      setLastName('');
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
     }
 
     setLoading(false);
@@ -124,7 +124,7 @@ const SignupPage = () => {
           <div className="relative">
             <input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               required
               name="password"
               placeholder="Must be at least 8 characters"
@@ -151,7 +151,7 @@ const SignupPage = () => {
           <div className="relative">
             <input
               id="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
+              type={showConfirmPassword ? "text" : "password"}
               required
               name="confirmPassword"
               placeholder="Confirm your password"
@@ -176,16 +176,16 @@ const SignupPage = () => {
           disabled={loading} // Disable button when loading
           className={`w-full p-3 cursor-pointer text-white font-semibold rounded-lg transition duration-300 ease-in-out ${
             loading
-              ? 'bg-purple-400 cursor-not-allowed'
-              : 'bg-purple-600 hover:bg-purple-700 hover:shadow-lg'
+              ? "bg-purple-400 cursor-not-allowed"
+              : "bg-purple-600 hover:bg-purple-700 hover:shadow-lg"
           }`}
         >
-          {loading ? 'Signing Up...' : 'Sign Up'}
+          {loading ? "Signing Up..." : "Sign Up"}
         </button>
 
         {/* Sign In Link */}
         <p className="mt-6 text-center text-gray-600">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link
             href="/auth/login"
             className="text-purple-600 hover:text-purple-800 font-medium hover:underline"

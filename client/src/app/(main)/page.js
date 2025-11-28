@@ -1,14 +1,14 @@
 "use client";
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useAuth } from '@/Context/Authentication';
-import Benefits from './Home/Benefits.jsx';
-import CTA from './Home/CTA.jsx';
-import FAQ from './Home/FAQ.jsx';
-import HomeHero from './Home/HomeHero.jsx';
-import HomeServices from './Home/HomeServices.jsx';
-import Pricing from './Home/Pricing.jsx';
-import Process from './Home/Process.jsx';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "@/context/Authentication";
+import Benefits from "./Home/Benefits.jsx";
+import CTA from "./Home/CTA.jsx";
+import FAQ from "./Home/FAQ.jsx";
+import HomeHero from "./Home/HomeHero.jsx";
+import HomeServices from "./Home/HomeServices.jsx";
+import Pricing from "./Home/Pricing.jsx";
+import Process from "./Home/Process.jsx";
 
 export default function HomePage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [user, loading, router]);
 
@@ -31,11 +31,11 @@ export default function HomePage() {
     <main>
       <HomeHero />
       <HomeServices />
-      <Process/>
-      <Benefits/>
-      <Pricing/>
-      <FAQ/>
-      <CTA/>
+      <Process />
+      <Benefits />
+      <Pricing />
+      <FAQ />
+      <CTA />
     </main>
   );
 }

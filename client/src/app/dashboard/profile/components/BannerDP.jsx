@@ -1,13 +1,34 @@
-"use client"
-import React, { useState, useRef } from 'react';
-import { Pencil, Upload, Trash2, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+"use client";
+import React, { useState, useRef, useEffect } from "react";
+import { Pencil, Upload, Trash2, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useProfile } from "@/context/ProfileContext";
+import { toast } from "react-toastify";
 
 const BannerDP = () => {
-  const [bannerImage, setBannerImage] = useState('https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=300&fit=crop');
-  const [profileImage, setProfileImage] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop');
+  const { profile, updateProfileImage, updatePosterImage } = useProfile();
+
+  // Default images
+  const defaultBanner =
+    "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=300&fit=crop";
+  const defaultProfile =
+    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop";
+
+  const [bannerImage, setBannerImage] = useState(defaultBanner);
+  const [profileImage, setProfileImage] = useState(defaultProfile);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
+  // Sync with profile data
+  useEffect(() => {
+    if (profile?.posterImage) {
+      setBannerImage(profile.posterImage);
+    }
+    if (profile?.profileImage) {
+      setProfileImage(profile.profileImage);
+    }
+  }, [profile]);
+
   const bannerInputRef = useRef(null);
   const profileInputRef = useRef(null);
 
@@ -19,7 +40,7 @@ const BannerDP = () => {
     setIsModalOpen(true);
   };
 
-  const handleBannerChange = (e) => {
+  const handleBannerChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -27,23 +48,39 @@ const BannerDP = () => {
         setBannerImage(reader.result);
       };
       reader.readAsDataURL(file);
+      const result = await updatePosterImage(file);
+      if (result.success) {
+        toast.success("Poster updated successfully");
+      } else {
+        toast.error("Failed to update poster");
+      }
     }
   };
 
-  const handleProfileChange = (e) => {
+  const handleProfileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileImage(reader.result);
-        setIsModalOpen(false);
       };
       reader.readAsDataURL(file);
+
+      // Upload
+      const result = await updateProfileImage(file);
+      if (result.success) {
+        setIsModalOpen(false);
+        console.log("Profile image updated successfully");
+      } else {
+        console.error("Failed to update profile image");
+      }
     }
   };
 
   const handleDeleteProfile = () => {
-    setProfileImage('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop');
+    // For now, just reset to default locally.
+    // Ideally, we should have a delete API endpoint.
+    setProfileImage(defaultProfile);
     setIsModalOpen(false);
   };
 
@@ -53,15 +90,18 @@ const BannerDP = () => {
 
   return (
     <>
-      <div className="w-full  rounded-lg shadow-md overflow-hidden">
+      <div className="w-full rounded-lg shadow-md overflow-hidden">
         {/* Banner Section */}
-        <div className="relative w-full h-[200px] bg-gradient-to-r from-purple-500 to-blue-500">
-          <img
+        <div className="relative w-full h-[250px] bg-gradient-to-r from-purple-500 to-blue-500">
+          <Image
             src={bannerImage}
             alt="Banner"
             className="w-full h-full object-cover"
+            width={1200}
+            height={300}
+            priority
           />
-          
+
           {/* Edit Banner Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -89,12 +129,15 @@ const BannerDP = () => {
             className="relative -mt-20 w-[160px] h-[160px] rounded-full border-4 border-white dark:border-gray-800 shadow-xl cursor-pointer group"
             onClick={handleProfileClick}
           >
-            <img
+            <Image
               src={profileImage}
               alt="Profile"
               className="w-full h-full rounded-full object-cover"
+              width={160}
+              height={160}
+              priority
             />
-            
+
             {/* Overlay on hover */}
             <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Pencil className="w-6 h-6 text-white" />
@@ -102,7 +145,6 @@ const BannerDP = () => {
           </motion.div>
         </div>
       </div>
-
 
       <AnimatePresence>
         {isModalOpen && (
@@ -123,7 +165,9 @@ const BannerDP = () => {
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Profile Photo</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Profile Photo
+                </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
@@ -135,10 +179,12 @@ const BannerDP = () => {
               {/* Current Profile Image */}
               <div className="flex justify-center mb-6">
                 <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-purple-500 shadow-lg">
-                  <img
+                  <Image
                     src={profileImage}
                     alt="Current Profile"
                     className="w-full h-full object-cover"
+                    width={160}
+                    height={160}
                   />
                 </div>
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/Context/Authentication";
+import { useAuth } from "@/context/Authentication";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -34,7 +34,7 @@ const LoginPage = () => {
     if (res.success) {
       setEmail("");
       setPassword("");
-      router.push('/dashboard')
+      router.push("/dashboard");
     }
 
     setLoading(false);

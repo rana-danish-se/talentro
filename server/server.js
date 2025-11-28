@@ -5,11 +5,14 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import profileRoutes from "./routes/profile.route.js";
 
 // Load environment variables
 configDotenv();
+
 // Initialize Express app
 const app = express();
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
@@ -41,6 +44,8 @@ app.get("/", (req, res) => {
 // API routes will be added here
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/profile", profileRoutes);
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error("Error:", err);
