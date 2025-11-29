@@ -45,7 +45,9 @@
   --shadow-lg: 0 10px 15px -3px rgba(168, 85, 247, 0.3);
   --shadow-glow: 0 0 20px rgba(168, 85, 247, 0.4);
 }
-
+.reset-tw , .reset-tw *{
+   all: revert !important;
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

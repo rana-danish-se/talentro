@@ -29,7 +29,7 @@ const profileSchema = new mongoose.Schema({
   },
   profileImage: {
     type: String,
-    default: 'default-avatar.png'
+    default: '/assets/default-avatar.jpg'
   },
   posterImage: {
     type: String,

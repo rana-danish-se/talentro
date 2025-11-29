@@ -12,6 +12,8 @@ import experienceRoutes from "./routes/experience.route.js";
 import projectRoutes from "./routes/project.route.js";
 import skillRoutes from "./routes/skill.route.js";
 import postRoutes from "./routes/post.route.js";
+import feedRoutes from "./routes/feed.route.js";
+import savedPostRoutes from "./routes/savedPost.route.js";
 
 // Load environment variables
 configDotenv();
@@ -56,6 +58,8 @@ app.use("/api/experience", experienceRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/feed", feedRoutes);
+app.use("/api/saved-posts", savedPostRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

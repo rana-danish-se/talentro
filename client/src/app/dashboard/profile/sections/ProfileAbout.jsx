@@ -60,9 +60,10 @@ const ProfileAbout = () => {
             initial={false}
             animate={{ height: isExpanded ? "auto" : "100px" }}
             transition={{ duration: 0.3 }}
-            className="overflow-hidden prose prose-invert prose-purple max-w-none"
+            className="overflow-hidden prose prose-invert reset-tw prose-purple max-w-none"
           >
             <ReactMarkdown
+          
               components={{
                 p: ({ children }) => (
                   <p className="mb-4 text-gray-300">{children}</p>

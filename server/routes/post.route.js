@@ -7,10 +7,13 @@ import {
   getPostById,
   updatePost,
   deletePost,
-  reactToPost,
+} from "../controllers/userPost.controller.js";
+import { reactToPost } from "../controllers/reaction.controller.js";
+import {
   addComment,
   getPostComments,
-} from "../controllers/userPost.controller.js";
+  likeComment,
+} from "../controllers/comment.controller.js";
 
 const router = express.Router();
 
@@ -24,6 +27,7 @@ router.post("/create", upload.array("media", 4), createPost);
 router.post("/:postId/react", reactToPost);
 router.post("/:postId/comment", addComment);
 router.get("/:postId/comments", getPostComments);
+router.post("/comments/:commentId/like", likeComment);
 
 // Post management
 router.put("/:postId", updatePost);
