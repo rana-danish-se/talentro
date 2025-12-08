@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://talentro-ten.vercel.app",
+  "https://talentro-main.vercel.app",
 ];
 
 if (process.env.CLIENT_URL) {
