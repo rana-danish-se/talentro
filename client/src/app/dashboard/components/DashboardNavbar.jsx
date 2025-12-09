@@ -90,16 +90,16 @@ const DashboardNavbar = () => {
             {/* Me Profile Section */}
             <li>
               <Link
-                href="/dashboard/profile"
+                href="/dashboard/me"
                 className={`flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all duration-300 group relative ${
-                  isActive("/dashboard/profile")
+                  isActive("/dashboard/me")
                     ? "bg-purple-100 dark:bg-purple-900/30"
                     : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                 }`}
               >
                 <div
                   className={`w-7 h-7 rounded-full mb-1 overflow-hidden border-2 transition-colors duration-300 ${
-                    isActive("/dashboard/profile")
+                    isActive("/dashboard/me")
                       ? "border-purple-600 dark:border-purple-400"
                       : "border-gray-300 dark:border-gray-600 group-hover:border-purple-600 dark:group-hover:border-purple-400"
                   }`}
@@ -114,7 +114,7 @@ const DashboardNavbar = () => {
                 </div>
                 <span
                   className={`text-xs font-medium transition-colors duration-300 ${
-                    isActive("/dashboard/profile")
+                    isActive("/dashboard/me")
                       ? "text-purple-600 dark:text-purple-400 font-semibold"
                       : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
                   }`}
@@ -225,10 +225,10 @@ const DashboardNavbar = () => {
                 transition={{ delay: 0.5 }}
               >
                 <Link
-                  href="/dashboard/profile"
+                  href="/dashboard/me"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-all ${
-                    isActive("/dashboard/profile")
+                    isActive("/dashboard/me")
                       ? "bg-purple-100 dark:bg-purple-900/30"
                       : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                   }`}

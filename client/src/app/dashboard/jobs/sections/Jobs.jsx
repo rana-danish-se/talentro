@@ -19,8 +19,7 @@ const JobCard = ({ job }) => {
   const userSlug = job.userId?.slug || "";
 
   return (
-    <div className="group relative w-full bg-neutral-900/50 hover:bg-neutral-900 border border-neutral-800 hover:border-purple-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col md:flex-row gap-6 backdrop-blur-sm">
-      {/* Left: Poster Image - Clickable to Profile */}
+    <Link href={`/dashboard/jobs/${job._id}`} className="group relative w-full bg-neutral-900/50 hover:bg-neutral-900 border border-neutral-800 hover:border-purple-500/50 rounded-2xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 flex flex-col md:flex-row gap-6 backdrop-blur-sm">
       <Link
         href={`/dashboard/profile/${userSlug}`}
         className="flex-shrink-0"
@@ -152,7 +151,7 @@ const JobCard = ({ job }) => {
           </Link>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -192,7 +191,7 @@ const JobsSection = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6">
+    <div className="max-w-3xl  mx-auto py-12 px-4 sm:px-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
           <h2 className="text-3xl font-bold text-white flex items-center gap-2 mb-2">

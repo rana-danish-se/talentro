@@ -42,15 +42,10 @@ if (process.env.CLIENT_URL) {
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true);
-      
+    origin: function (origin, callback) {      
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
-      // Log the rejected origin for debugging
       console.log('Rejected origin:', origin);
       return callback(new Error('Not allowed by CORS'));
     },

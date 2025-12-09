@@ -49,7 +49,6 @@ const JobDetailsPage = () => {
     }
   }, [id, fetchJobById]);
 
-  // Separate useEffect to check application status
   useEffect(() => {
     const checkStatus = async () => {
       if (!id || !user) return;
@@ -170,11 +169,10 @@ const JobDetailsPage = () => {
   return (
     <div className="min-h-screen bg-black text-gray-100 p-4 md:p-8">
       <div className="max-w-5xl mx-auto pb-20">
-        {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-neutral-900 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-neutral-800 shadow-2xl relative overflow-hidden"
+          className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 md:p-10 border border-neutral-800 shadow-2xl relative overflow-hidden"
         >
           <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
             <div className="flex-1">
@@ -253,8 +251,8 @@ const JobDetailsPage = () => {
               disabled={hasApplied}
               className={`${
                 hasApplied
-                  ? "bg-gray-600 cursor-not-allowed"
-                  : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  ? "bg-neutral-800 cursor-not-allowed"
+                  : "bg-purple-600 cursor-pointer hover:bg-purple-700"
               } text-white px-8 py-4 rounded-2xl font-semibold shadow-lg shadow-purple-900/50 flex items-center gap-2 transition-all`}
             >
               <Send className="w-5 h-5" />
@@ -552,7 +550,7 @@ const JobDetailsPage = () => {
             className={`${
               hasApplied
                 ? "bg-gray-600 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                : "bg-purple-600 hover:bg-purple-700 cursor-pointer"
             } text-white px-10 py-4 rounded-2xl font-semibold shadow-lg shadow-purple-900/30 flex items-center gap-2 transition-all text-lg`}
           >
             <Send className="w-6 h-6" />
@@ -727,7 +725,7 @@ const JobDetailsPage = () => {
                 <button
                   onClick={handleSubmitApplication}
                   disabled={submitting}
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 cursor-pointer text-white rounded-xl hover:from-purple-800 hover:to-purple-900 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {submitting ? (
                     <>

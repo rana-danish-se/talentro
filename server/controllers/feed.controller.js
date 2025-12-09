@@ -260,7 +260,6 @@ export const getFeed = async (req, res) => {
       fieldUserIds.forEach((id) => categorizedUsers.field.add(id));
     }
 
-    // 7. FETCH POSTS IN PRIORITY ORDER
 
     // GROUP A: Connection Posts (Public + Connections visibility)
     let connectionPosts = [];
