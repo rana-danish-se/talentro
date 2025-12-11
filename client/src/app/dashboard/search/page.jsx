@@ -19,7 +19,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-const SearchPage = () => {
+const SearchPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
@@ -886,6 +886,23 @@ const SearchPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// Wrap the main content in Suspense
+import { Suspense } from "react";
+
+const SearchPage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 };
 
