@@ -105,6 +105,23 @@ export const acceptInvitation = async (req, res) => {
     connection.status = "accepted";
     await connection.save();
 
+    // Send notification to the requester that their connection was accepted
+    try {
+      const notificationService = (
+        await import("../services/notification.service.js")
+      ).default;
+      await notificationService.createConnectionAcceptedNotification(
+        connection.requester.toString(),
+        userId
+      );
+    } catch (notifError) {
+      console.error(
+        "Failed to send connection accepted notification:",
+        notifError
+      );
+      // Don't fail the request if notification fails
+    }
+
     res.status(200).json({ message: "Invitation accepted", connection });
   } catch (error) {
     console.error("Error accepting invitation:", error);
@@ -150,6 +167,44 @@ export const declineInvitation = async (req, res) => {
   }
 };
 
+// Remove/disconnect from a connection
+export const removeConnection = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { connectionId } = req.body;
+
+    const connection = await Connection.findById(connectionId);
+
+    if (!connection) {
+      return res.status(404).json({ message: "Connection not found" });
+    }
+
+    // Check if user is part of this connection
+    const isRequester = connection.requester.toString() === userId.toString();
+    const isRecipient = connection.recipient.toString() === userId.toString();
+
+    if (!isRequester && !isRecipient) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to remove this connection" });
+    }
+
+    // Only allow removing accepted connections
+    if (connection.status !== "accepted") {
+      return res.status(400).json({
+        message: "Can only remove accepted connections",
+      });
+    }
+
+    await Connection.findByIdAndDelete(connectionId);
+
+    res.status(200).json({ message: "Connection removed successfully" });
+  } catch (error) {
+    console.error("Error removing connection:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Get received invitations
 export const getUserInvitations = async (req, res) => {
   try {
@@ -161,7 +216,7 @@ export const getUserInvitations = async (req, res) => {
     })
       .populate({
         path: "requester",
-        select: "accountType slug", 
+        select: "accountType slug",
       })
       .sort({ createdAt: -1 });
 

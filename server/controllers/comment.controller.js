@@ -3,6 +3,7 @@ import Comment from "../models/Comment.model.js";
 import CommentReaction from "../models/CommentReaction.model.js";
 import Profile from "../models/Profile.model.js";
 import mongoose from "mongoose";
+import notificationService from "../services/notification.service.js";
 
 // ============================================
 // Add a comment (or reply)
@@ -62,6 +63,25 @@ export const addComment = async (req, res) => {
         headline: userProfile?.headline || "",
       },
     };
+
+    // Send notification to post author (if not commenting on own post)
+    if (post.authorId.toString() !== userId) {
+      try {
+        await notificationService.createPostCommentNotification(
+          postId,
+          post.authorId,
+          userId,
+          newComment._id,
+          content
+        );
+      } catch (notificationError) {
+        // Log error but don't fail the comment
+        console.error(
+          "Failed to send comment notification:",
+          notificationError
+        );
+      }
+    }
 
     res.status(201).json({
       success: true,

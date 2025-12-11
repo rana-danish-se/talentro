@@ -1,0 +1,22 @@
+# ONESIGNAL FRONTEND SETUP
+
+## Add this to your .env.local file in the client directory:
+
+NEXT_PUBLIC_ONESIGNAL_APP_ID=your_app_id_here
+
+## Instructions:
+1. Go to https://onesignal.com/
+2. Sign up / Log in
+3. Create new app (or select existing)
+4. Go to Settings → Keys & IDs
+5. Copy your "App ID"
+6. Replace "your_app_id_here" above with your actual App ID
+7. Save this file
+
+## Example:
+NEXT_PUBLIC_ONESIGNAL_APP_ID=a1b2c3d4-e5f6-7890-a1b2-c3d4e5f67890
+
+## Note:
+- This is a PUBLIC key (safe to expose in frontend)
+- Different from the REST API Key (which stays on backend)
+- Must start with NEXT_PUBLIC_ to be accessible in browser

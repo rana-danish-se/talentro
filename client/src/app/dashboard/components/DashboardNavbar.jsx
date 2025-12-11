@@ -10,17 +10,19 @@ import {
   Menu,
   X,
   LogOut,
+  Search,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useProfile } from "@/context/ProfileContext";
 import { useAuth } from "@/context/Authentication";
 
 const DashboardNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter(); // Initialize router
   const pathname = usePathname();
   const { profile } = useProfile();
   const { logout } = useAuth();
@@ -40,16 +42,27 @@ const DashboardNavbar = () => {
   return (
     <nav className="px-6 md:px-10 py-3 border-b border-purple-500/20 sticky top-0 backdrop-blur-xl z-50 shadow-lg shadow-purple-500/5">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <Image
-            src="/assets/logo.png"
-            width={180}
-            height={180}
-            alt="Talentro Logo"
-            className="w-32 md:w-40 h-auto"
-          />
-        </Link>
+        <div className="flex items-center gap-4 lg:gap-8">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src="/assets/logo.png"
+              width={180}
+              height={180}
+              alt="Talentro Logo"
+              className="w-32 md:w-40 h-auto"
+            />
+          </Link>
+
+          {/* Search Bar - Desktop */}
+          <div
+            onClick={() => router.push("/dashboard/search")}
+            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border border-purple-200 dark:border-purple-800 bg-white/50 dark:bg-black/20 hover:bg-purple-50 dark:hover:bg-purple-900/10 cursor-pointer transition-all w-48 lg:w-64 text-sm text-gray-500 dark:text-gray-400 hover:border-purple-300 dark:hover:border-purple-700"
+          >
+            <Search className="w-4 h-4" />
+            <span>Search...</span>
+          </div>
+        </div>
 
         <div className="hidden lg:flex items-center justify-center gap-2">
           <ul className="flex gap-1 items-center">

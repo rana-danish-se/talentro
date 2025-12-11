@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { ArrowRight, Menu, X } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Menu, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { name: 'HOME', href: '/' },
-    { name: 'ABOUT', href: '/about' },
-    { name: 'PRICING', href: '/pricing' },
-    { name: 'PEOPLE', href: '/people' },
+    { name: "HOME", href: "/" },
+    { name: "ABOUT", href: "/about" },
+    { name: "PRICING", href: "/pricing" },
+    { name: "PEOPLE", href: "/people" },
   ];
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -44,21 +44,24 @@ const Navbar = () => {
                   <motion.span
                     className="absolute -bottom-1 left-0 h-0.5 bg-primary"
                     initial={{ width: 0 }}
-                    whileHover={{ width: '100%' }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    whileHover={{ width: "100%" }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                   />
                 </Link>
               </li>
             ))}
           </ul>
-          
+
           <Link href="/feedback">
             <motion.button
               className="px-5 py-3 rounded-md flex items-center cursor-pointer justify-center gap-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary-hover transition-all"
-              whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(168, 85, 247, 0.5)' }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 0 25px rgba(168, 85, 247, 0.5)",
+              }}
               whileTap={{ scale: 0.95 }}
             >
-              Feedback 
+              Feedback
               <motion.div
                 animate={{ x: [0, 3, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
@@ -89,7 +92,7 @@ const Navbar = () => {
           <motion.div
             className="lg:hidden mt-4 pb-4"
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
@@ -111,7 +114,7 @@ const Navbar = () => {
                     <motion.span
                       className="absolute bottom-0 left-4 h-0.5 bg-primary"
                       initial={{ width: 0 }}
-                      whileHover={{ width: 'calc(100% - 2rem)' }}
+                      whileHover={{ width: "calc(100% - 2rem)" }}
                       transition={{ duration: 0.3 }}
                     />
                   </Link>

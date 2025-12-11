@@ -1,0 +1,19 @@
+# ============================================
+# OneSignal Push Notification Configuration
+# ============================================
+
+# Get these from your OneSignal dashboard:
+# 1. Go to https://onesignal.com/
+# 2. Create/Login to your account
+# 3. Create a new app or select existing app
+# 4. Go to Settings > Keys & IDs
+
+# Your OneSignal App ID (found in Settings > Keys & IDs)
+ONESIGNAL_APP_ID=your_onesignal_app_id_here
+
+# Your OneSignal REST API Key (found in Settings > Keys & IDs)
+ONESIGNAL_API_KEY=your_onesignal_rest_api_key_here
+
+# Note: The notification system will work without these credentials,
+# but push notifications will not be sent. Notifications will still
+# be saved to the database and can be fetched via API.

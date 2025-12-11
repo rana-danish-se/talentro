@@ -1,5 +1,6 @@
 import Post from "../models/Post.model.js";
 import { Reaction } from "../models/Reaction.model.js";
+import notificationService from "../services/notification.service.js";
 
 // ============================================
 // React to a post (Like, Love, etc.)
@@ -7,7 +8,7 @@ import { Reaction } from "../models/Reaction.model.js";
 export const reactToPost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { type } = req.body; 
+    const { type } = req.body;
     const userId = req.user.id;
 
     const validReactions = [
@@ -58,6 +59,23 @@ export const reactToPost = async (req, res) => {
     }
 
     await post.save();
+
+    // Send notification for new reaction (not when toggling off or changing)
+    if (!existingReaction && post.authorId.toString() !== userId) {
+      try {
+        await notificationService.createPostLikeNotification(
+          postId,
+          post.authorId,
+          userId
+        );
+      } catch (notificationError) {
+        // Log error but don't fail the reaction
+        console.error(
+          "Failed to send reaction notification:",
+          notificationError
+        );
+      }
+    }
 
     res.status(200).json({
       success: true,

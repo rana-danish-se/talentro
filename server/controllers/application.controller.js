@@ -259,6 +259,51 @@ export const updateApplicationStatus = async (req, res) => {
     application.status = status;
     await application.save();
 
+    // Send notification to applicant when status changes to shortlisted or accepted
+    if (
+      oldStatus !== status &&
+      (status === "shortlisted" || status === "accepted")
+    ) {
+      try {
+        const notificationService = (
+          await import("../services/notification.service.js")
+        ).default;
+
+        // Determine notification  type and message
+        const notifType =
+          status === "shortlisted"
+            ? "job_application_shortlisted"
+            : "job_application_accepted";
+        const title =
+          status === "shortlisted"
+            ? "Application Shortlisted!"
+            : "Application Accepted!";
+        const message =
+          status === "shortlisted"
+            ? `Your application for "${job.title}" has been shortlisted!`
+            : `Congratulations! Your application for "${job.title}" has been accepted!`;
+
+        await notificationService.createAndSendNotification({
+          recipientId: application.applicantId.toString(),
+          senderId: userId,
+          type: notifType,
+          title,
+          message,
+          metadata: {
+            jobId: job._id.toString(),
+            applicationId: application._id.toString(),
+            jobTitle: job.title,
+          },
+        });
+      } catch (notifError) {
+        console.error(
+          "Failed to send job application notification:",
+          notifError
+        );
+        // Don't fail the request if notification fails
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: `Application status updated to ${status}`,

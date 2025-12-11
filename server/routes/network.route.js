@@ -6,6 +6,7 @@ import {
   getSuggestionNetwork,
   getTotalConnections,
   getUserInvitations,
+  removeConnection,
 } from "../controllers/network.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 
@@ -16,6 +17,7 @@ router.use(protect);
 router.post("/send-invitation", sendInvitation);
 router.put("/accept-invitation", acceptInvitation);
 router.put("/decline-invitation", declineInvitation);
+router.post("/remove-connection", removeConnection);
 router.get("/invitations", getUserInvitations);
 router.get("/suggestions", getSuggestionNetwork);
 router.get("/total-connections", getTotalConnections);

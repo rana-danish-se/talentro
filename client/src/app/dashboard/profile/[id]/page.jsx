@@ -1,34 +1,93 @@
 "use client";
-import React from "react";
-import { motion } from "framer-motion";
-import { Bell, GroupIcon, MessageCircle, User2 } from "lucide-react";
+
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import UserProfile from "./sections/UserProfile";
+import UserAbout from "./sections/UserAbout";
+import UserEducation from "./sections/UserEducation";
+import UserProjects from "./sections/UserProjects";
+import UserSkills from "./sections/UserSkills";
+import UserServices from "./sections/UserServices";
+import UserExperience from "./sections/UserExperience";
 
 const UserProfilePage = () => {
-  return (
-    <div className="flex h-[80vh] w-full items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-          className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20"
-        >
-          <User2     className="h-12 w-12 text-blue-500" />
-        </motion.div>
+  const params = useParams();
+  const slug = params.id;
 
-        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-          Profile Coming Soon
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                We&apos;re working hard to bring you a comprehensive profile
-          system. Stay tuned for updates!
-        </p>
-      </motion.div>
-    </div>
+  const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const res = await fetch(`${API_URL}/api/users/${slug}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setUser(data.data.user);
+          setProfile(data.data.user.profile);
+        } else {
+          setError(data.message || "User not found");
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+        setError("Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchUserProfile();
+    }
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen w-full items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen w-full items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-500 mb-2">Error</h1>
+          <p className="text-neutral-400">{error}</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <main className="flex min-h-screen w-full items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Profile Not Found</h1>
+          <p className="text-neutral-400">
+            This user hasn&apos;t set up their profile yet.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen w-full p-4">
+      <UserProfile profile={profile} user={user} />
+      <UserAbout profile={profile} />
+      <UserEducation educations={user?.educations || []} />
+      <UserExperience experiences={user?.experiences || []} />
+      <UserProjects projects={user?.projects || []} />
+      <UserSkills skills={user?.skills || []} />
+      <UserServices services={user?.services || []} />
+    </main>
   );
 };
 

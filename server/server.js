@@ -17,6 +17,8 @@ import savedPostRoutes from "./routes/savedPost.route.js";
 import networkRoutes from "./routes/network.route.js";
 import jobsRoutes from "./routes/jobs.route.js";
 import applicationRoutes from "./routes/application.route.js";
+import searchRoutes from "./routes/search.routes.js";
+import notificationRoutes from "./routes/notification.route.js";
 
 // Load environment variables
 configDotenv();
@@ -42,20 +44,26 @@ if (process.env.CLIENT_URL) {
 
 app.use(
   cors({
-    origin: function (origin, callback) {      
+    origin: function (origin, callback) {
+      // Allow requests with no origin (same-origin requests, Postman, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      console.log('Rejected origin:', origin);
-      return callback(new Error('Not allowed by CORS'));
+      console.log("Rejected origin:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
     preflightContinue: false,
-    optionsSuccessStatus: 204
+    optionsSuccessStatus: 204,
   })
 );
+
 app.use(cookieParser());
 
 // Connect to MongoDB
@@ -85,6 +93,8 @@ app.use("/api/saved-posts", savedPostRoutes);
 app.use("/api/network", networkRoutes);
 app.use("/api/jobs", jobsRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/search", searchRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
