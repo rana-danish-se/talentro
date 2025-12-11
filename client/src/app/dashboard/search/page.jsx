@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import {
   Search,
   MapPin,
@@ -14,7 +16,7 @@ import {
   Clock,
   Star,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -890,7 +892,6 @@ const SearchPageContent = () => {
 };
 
 // Wrap the main content in Suspense
-import { Suspense } from "react";
 
 const SearchPage = () => {
   return (
