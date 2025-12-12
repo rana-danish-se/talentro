@@ -19,6 +19,7 @@ import jobsRoutes from "./routes/jobs.route.js";
 import applicationRoutes from "./routes/application.route.js";
 import searchRoutes from "./routes/search.routes.js";
 import notificationRoutes from "./routes/notification.route.js";
+import messageRoutes from "./routes/message.route.js";
 
 // Load environment variables
 configDotenv();
@@ -95,6 +96,7 @@ app.use("/api/jobs", jobsRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

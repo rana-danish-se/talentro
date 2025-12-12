@@ -280,6 +280,61 @@ export const getUserInvitations = async (req, res) => {
   }
 };
 
+// Get user connections
+export const getUserConnections = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const connections = await Connection.find({
+      $or: [{ requester: userId }, { recipient: userId }],
+      status: "accepted",
+    });
+
+    const formattedConnections = [];
+
+    for (const connection of connections) {
+      const isRequester = connection.requester.toString() === userId;
+      const connectedUserId = isRequester
+        ? connection.recipient
+        : connection.requester;
+
+      const connectedUser = await User.findById(connectedUserId).select("slug");
+      const connectedUserProfile = await Profile.findOne({
+        userId: connectedUserId,
+      });
+
+      if (connectedUser) {
+        formattedConnections.push({
+          _id: connection._id,
+          user: {
+            _id: connectedUserId,
+            username: connectedUser.slug,
+            firstName: connectedUserProfile?.firstName || "",
+            lastName: connectedUserProfile?.lastName || "",
+            fullName:
+              connectedUserProfile?.fullName ||
+              `${connectedUserProfile?.firstName || ""} ${
+                connectedUserProfile?.lastName || ""
+              }`.trim() ||
+              "Unknown",
+            headline: connectedUserProfile?.headline || "",
+            profilePicture:
+              connectedUserProfile?.profileImage ||
+              "/assets/default-avatar.jpg",
+            industry: connectedUserProfile?.industry || "",
+          },
+          connectedAt: connection.updatedAt,
+        });
+      }
+    }
+
+    res.status(200).json(formattedConnections);
+  } catch (error) {
+    console.error("Error getting user connections:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Get total connections count
 export const getTotalConnections = async (req, res) => {
   try {

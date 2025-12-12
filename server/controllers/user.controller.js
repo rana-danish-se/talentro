@@ -103,3 +103,87 @@ export const getUserBySlug = async (req, res) => {
     });
   }
 };
+
+export const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const currentUserId = req.user?.id;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required",
+      });
+    }
+
+    // 1. Search Profiles for Name matches
+    const profiles = await Profile.find({
+      $or: [
+        { firstName: { $regex: query, $options: "i" } },
+        { lastName: { $regex: query, $options: "i" } },
+      ],
+    }).populate("userId", "email slug _id");
+
+    // 2. Search Users for Email/Slug matches
+    const users = await User.find({
+      $or: [
+        { email: { $regex: query, $options: "i" } },
+        { slug: { $regex: query, $options: "i" } },
+      ],
+    }).select("email slug _id");
+
+    // 3. Combine and Format
+    const userMap = new Map();
+
+    // Process Profile matches
+    for (const p of profiles) {
+      if (!p.userId) continue; // Should not happen if data integrity is good
+      const uId = p.userId._id.toString();
+      if (uId === currentUserId) continue; // Exclude self
+
+      userMap.set(uId, {
+        _id: p.userId._id,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        username: p.userId.slug, // Assuming slug is used as username
+        email: p.userId.email,
+        profileImage: p.profileImage,
+        headline: p.headline,
+      });
+    }
+
+    // Process User matches (fetch their profiles if not already in map)
+    for (const u of users) {
+      const uId = u._id.toString();
+      if (uId === currentUserId) continue;
+      if (userMap.has(uId)) continue; // Already added via profile match
+
+      const p = await Profile.findOne({ userId: u._id });
+      if (p) {
+        userMap.set(uId, {
+          _id: u._id,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          username: u.slug,
+          email: u.email,
+          profileImage: p.profileImage,
+          headline: p.headline,
+        });
+      }
+    }
+
+    const results = Array.from(userMap.values()).slice(0, 10);
+
+    res.status(200).json({
+      success: true,
+      data: results,
+    });
+  } catch (error) {
+    console.error("Search users error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error searching users",
+      error: error.message,
+    });
+  }
+};
