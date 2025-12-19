@@ -331,6 +331,20 @@ export const getUserConnections = async (req, res) => {
           connectedAt: connection.updatedAt,
         });
       } else {
+        // Include placeholder for deleted accounts so count remains consistent
+        formattedConnections.push({
+          _id: connection._id,
+          user: {
+            _id: connectedUserId,
+            username: "deleted-user",
+            fullName: "Deleted Account",
+            headline: "This user no longer exists",
+            profilePicture: "/assets/default-avatar.jpg",
+            industry: "",
+            isDeletedAccount: true,
+          },
+          connectedAt: connection.updatedAt,
+        });
         console.warn(
           `Connection ${connection._id} refers to non-existent user ${connectedUserId}`
         );

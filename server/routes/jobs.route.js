@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer";
+import upload from "../utils/multer.js";
 import {
   createJob,
   getAllJobs,
@@ -13,34 +13,6 @@ import {
 import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/jpg",
-      "image/webp",
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(
-        new Error(
-          "Invalid file type. Only images, PDFs, and Word documents are allowed."
-        )
-      );
-    }
-  },
-});
 router.post("/create", protect, upload.array("attachments", 4), createJob);
 router.get("/", getAllJobs);
 router.get("/my-jobs", protect, getMyJobs);

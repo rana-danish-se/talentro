@@ -72,11 +72,17 @@ export const createJob = async (req, res) => {
     const attachmentUrls = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        try {
-          const result = await uploadToCloudinary(file.buffer, "auto");
-          attachmentUrls.push(result.secure_url);
-        } catch (uploadError) {
-          console.error("Error uploading file:", uploadError);
+        // Since we are using CloudinaryStorage in multer utility,
+        // the file is already uploaded and file.path contains the URL.
+        if (file.path) {
+          attachmentUrls.push(file.path);
+        } else if (file.buffer) {
+          try {
+            const result = await uploadToCloudinary(file.buffer, "auto");
+            attachmentUrls.push(result.secure_url);
+          } catch (uploadError) {
+            console.error("Error uploading file:", uploadError);
+          }
         }
       }
     }
@@ -372,11 +378,15 @@ export const updateJob = async (req, res) => {
     // 2. Add new uploaded files
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        try {
-          const result = await uploadToCloudinary(file.buffer, "auto");
-          attachmentUrls.push(result.secure_url);
-        } catch (uploadError) {
-          console.error("Error uploading file:", uploadError);
+        if (file.path) {
+          attachmentUrls.push(file.path);
+        } else if (file.buffer) {
+          try {
+            const result = await uploadToCloudinary(file.buffer, "auto");
+            attachmentUrls.push(result.secure_url);
+          } catch (uploadError) {
+            console.error("Error uploading file:", uploadError);
+          }
         }
       }
     }

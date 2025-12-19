@@ -62,7 +62,13 @@ const ConnectionsPage = () => {
     try {
       if (action === "accept") await acceptInvitation(id);
       if (action === "decline") await declineInvitation(id);
-      // Refresh current tab data could be handled by the hook's optimistic updates
+      if (action === "remove") {
+        if (
+          window.confirm("Are you sure you want to remove this connection?")
+        ) {
+          await removeConnection(id);
+        }
+      }
     } catch (err) {
       console.error(`Error during ${action}:`, err);
     }
@@ -186,19 +192,37 @@ const ConnectionsPage = () => {
 
               <div className="border-t border-neutral-100 dark:border-neutral-800 w-full pt-4 mt-auto">
                 {activeTab === "accepted" ? (
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/dashboard/profile/${user.username || user.slug}`}
-                      className="flex-1 py-2 px-4 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium transition"
+                  <div className="flex flex-col gap-2 w-full">
+                    <div className="flex gap-2 w-full">
+                      {!user.isDeletedAccount ? (
+                        <>
+                          <Link
+                            href={`/dashboard/profile/${
+                              user.username || user.slug
+                            }`}
+                            className="flex-1 py-2 px-4 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-sm font-medium transition text-center"
+                          >
+                            View Profile
+                          </Link>
+                          <Link
+                            href={`/dashboard/messaging?recipient=${user._id}`}
+                            className="flex-1 py-2 px-4 rounded-lg bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-sm font-medium transition flex items-center justify-center gap-2"
+                          >
+                            <MessageSquare size={16} /> Message
+                          </Link>
+                        </>
+                      ) : (
+                        <div className="w-full py-2 px-4 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-sm font-medium italic">
+                          Account no longer available
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleAction("remove", item._id)}
+                      className="w-full py-1.5 text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded transition-colors"
                     >
-                      View Profile
-                    </Link>
-                    <Link
-                      href={`/dashboard/messaging?recipient=${user._id}`}
-                      className="flex-1 py-2 px-4 rounded-lg bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-sm font-medium transition flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare size={16} /> Message
-                    </Link>
+                      Remove Connection
+                    </button>
                   </div>
                 ) : activeTab === "received" ? (
                   <div className="flex gap-2 w-full">

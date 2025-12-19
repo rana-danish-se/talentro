@@ -45,6 +45,13 @@ export const getConnectionsApi = async () => {
   return response.data;
 };
 
+export const removeConnectionApi = async (connectionId) => {
+  const response = await apiClient.post("/api/network/remove-connection", {
+    connectionId,
+  });
+  return response.data;
+};
+
 export const getSentInvitationsApi = async () => {
   const response = await apiClient.get("/api/network/sent-invitations");
   return response.data;
@@ -176,6 +183,24 @@ export const useNetwork = () => {
     }
   }, []);
 
+  const removeConnection = useCallback(async (connectionId) => {
+    try {
+      const data = await removeConnectionApi(connectionId);
+      toast.info("Connection removed");
+      // Update state
+      setConnections((prev) =>
+        prev.filter((conn) => conn._id !== connectionId)
+      );
+      setTotalConnections((prev) => Math.max(0, prev - 1));
+      return data;
+    } catch (err) {
+      console.error("Error removing connection:", err);
+      const msg = err.response?.data?.message || "Failed to remove connection";
+      toast.error(msg);
+      throw err;
+    }
+  }, []);
+
   return {
     suggestions,
     invitations,
@@ -192,5 +217,6 @@ export const useNetwork = () => {
     sendInvitation,
     acceptInvitation,
     declineInvitation,
+    removeConnection,
   };
 };
