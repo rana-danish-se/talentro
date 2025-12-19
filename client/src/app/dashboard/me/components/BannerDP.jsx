@@ -11,8 +11,7 @@ const BannerDP = () => {
 
   const defaultBanner =
     "https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=300&fit=crop";
-  const defaultProfile =
-    "/asset/default-avatar.png";
+  const defaultProfile = "/assets/default-avatar.jpg";
 
   const [bannerImage, setBannerImage] = useState(defaultBanner);
   const [profileImage, setProfileImage] = useState(defaultProfile);

@@ -130,6 +130,30 @@ const serviceSchema = new mongoose.Schema(
       default: true,
       index: true,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    paidPrice: {
+      amount: { type: Number, default: 0 },
+      currency: { type: String, default: "USD" },
+      unit: { type: String, default: "hour" },
+    },
+    creditsPerUnit: {
+      type: Number,
+      default: 0,
+    },
+    stats: {
+      totalBookings: { type: Number, default: 0 },
+      totalReviews: { type: Number, default: 0 },
+      averageRating: { type: Number, default: 0 },
+    },
+    tags: [String],
+    exchangeMode: {
+      type: String,
+      enum: ["paid", "barter", "hybrid"],
+    },
   },
   {
     timestamps: true,
@@ -140,19 +164,19 @@ serviceSchema.index({ userId: 1, createdAt: -1 });
 serviceSchema.index({ category: 1, isActive: 1 });
 serviceSchema.index({ tags: 1 });
 serviceSchema.index({ exchangeMode: 1 });
-serviceSchema.index({ "location.coordinates": "2dsphere" }); 
+serviceSchema.index({ "location.coordinates": "2dsphere" });
 
-serviceSchema.pre("save", async function (next) {
+serviceSchema.pre("save", async function () {
   if (this.isNew) {
     const User = mongoose.model("User");
     const user = await User.findById(this.userId);
 
     if (!user) {
-      return next(new Error("User not found"));
+      throw new Error("User not found");
     }
 
-    // Check if user is free tier (assuming you have a subscription field)
-    const isFreeUser = !user.subscription || user.subscription.plan === "free";
+    // Check if user is free tier
+    const isFreeUser = user.accountType === "free";
 
     if (isFreeUser) {
       // Count active services for this user
@@ -163,17 +187,13 @@ serviceSchema.pre("save", async function (next) {
       });
 
       if (activeServiceCount >= 4) {
-        return next(
-          new Error(
-            "Free users can only create up to 4 active services. Please upgrade to premium or deactivate an existing service."
-          )
+        throw new Error(
+          "Free users can only create up to 4 active services. Please upgrade to premium or deactivate an existing service."
         );
       }
     }
   }
-  next();
 });
-
 
 serviceSchema.virtual("pricingDisplay").get(function () {
   if (!this.modesAvailable || this.modesAvailable.length === 0) {
@@ -181,26 +201,24 @@ serviceSchema.virtual("pricingDisplay").get(function () {
   }
 
   const displays = [];
+  const unit = this.paidPrice?.unit || "unit";
+  const currency = this.paidPrice?.currency || "USD";
+  const amount = this.paidPrice?.amount || 0;
+  const credits = this.creditsPerUnit || 0;
 
   if (this.modesAvailable.includes("barter")) {
-    displays.push(
-      `${this.creditsPerUnit} credit${this.creditsPerUnit > 1 ? "s" : ""}/${
-        this.paidPrice.unit
-      }`
-    );
+    displays.push(`${credits} credit${credits > 1 ? "s" : ""}/${unit}`);
   }
 
   if (this.modesAvailable.includes("paid")) {
-    displays.push(
-      `${this.paidPrice.currency} ${this.paidPrice.amount}/${this.paidPrice.unit}`
-    );
+    displays.push(`${currency} ${amount}/${unit}`);
   }
 
   if (this.modesAvailable.includes("hybrid")) {
     displays.push(
-      `${this.paidPrice.currency} ${this.paidPrice.amount / 2} + ${
-        this.creditsPerUnit
-      } credit${this.creditsPerUnit > 1 ? "s" : ""}/${this.paidPrice.unit}`
+      `${currency} ${amount / 2} + ${credits} credit${
+        credits > 1 ? "s" : ""
+      }/${unit}`
     );
   }
 
@@ -235,7 +253,7 @@ serviceSchema.statics.canUserCreateService = async function (userId) {
     return { canCreate: false, reason: "User not found" };
   }
 
-  const isFreeUser = !user.subscription || user.subscription.plan === "free";
+  const isFreeUser = user.accountType === "free";
 
   if (isFreeUser) {
     const activeCount = await this.getUserActiveServiceCount(userId);

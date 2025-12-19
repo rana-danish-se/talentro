@@ -321,8 +321,8 @@ export const getUserConnections = async (req, res) => {
               `${connectedUserProfile?.firstName || ""} ${
                 connectedUserProfile?.lastName || ""
               }`.trim() ||
-              "Unknown",
-            headline: connectedUserProfile?.headline || "",
+              "Unknown User",
+            headline: connectedUserProfile?.headline || "No headline set",
             profilePicture:
               connectedUserProfile?.profileImage ||
               "/assets/default-avatar.jpg",
@@ -330,6 +330,10 @@ export const getUserConnections = async (req, res) => {
           },
           connectedAt: connection.updatedAt,
         });
+      } else {
+        console.warn(
+          `Connection ${connection._id} refers to non-existent user ${connectedUserId}`
+        );
       }
     }
 

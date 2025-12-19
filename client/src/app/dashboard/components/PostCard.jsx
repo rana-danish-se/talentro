@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import {
   ThumbsUp,
@@ -178,7 +178,7 @@ const PostCard = ({ post, user }) => {
       <div className="p-4">
         <div className="flex items-start justify-between">
           <Link
-            href={`/dasboard/profile/${post.author.slug}`}
+            href={`/dashboard/profile/${post.author.slug}`}
             className="flex gap-3"
           >
             <Image
