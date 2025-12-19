@@ -13,13 +13,18 @@ const UserSkills = ({ skills }) => {
   };
 
   skills?.forEach((skill) => {
-    if (groupedSkills[skill.proficiencyLevel]) {
-      groupedSkills[skill.proficiencyLevel].push(skill);
+    const level =
+      skill.proficiencyLevel.charAt(0).toUpperCase() +
+      skill.proficiencyLevel.slice(1).toLowerCase();
+    if (groupedSkills[level]) {
+      groupedSkills[level].push(skill);
     }
   });
 
   const getProficiencyColor = (level) => {
-    switch (level) {
+    const normalizedLevel =
+      level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+    switch (normalizedLevel) {
       case "Beginner":
         return "bg-blue-900/30 text-blue-400 border-blue-700/50";
       case "Intermediate":

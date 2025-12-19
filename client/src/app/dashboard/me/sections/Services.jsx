@@ -18,9 +18,17 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { useProfile } from "@/context/ProfileContext";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
 
 const ServicesSection = () => {
-  const [services, setServices] = useState([]);
+  const { services, fetchServices, addService, updateService, deleteService } =
+    useProfile();
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
@@ -176,28 +184,35 @@ const ServicesSection = () => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    let result;
     if (editingService) {
-      setServices(
-        services.map((service) =>
-          service._id === editingService._id
-            ? { ...formData, _id: service._id, isActive: service.isActive }
-            : service
-        )
-      );
+      result = await updateService(editingService._id, formData);
     } else {
-      const newService = {
-        ...formData,
-        _id: Date.now().toString(),
-        isActive: true,
-      };
-      setServices([newService, ...services]);
+      result = await addService(formData);
     }
-    setIsModalOpen(false);
+
+    if (result.success) {
+      toast.success(
+        editingService
+          ? "Service updated successfully"
+          : "Service added successfully"
+      );
+      setIsModalOpen(false);
+    } else {
+      toast.error(result.error || "Failed to save service");
+    }
   };
 
-  const handleDelete = (id) => {
-    setServices(services.filter((service) => service._id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this service?")) {
+      const result = await deleteService(id);
+      if (result.success) {
+        toast.success("Service deleted successfully");
+      } else {
+        toast.error(result.error || "Failed to delete service");
+      }
+    }
   };
 
   const getModeIcons = (modes) => {

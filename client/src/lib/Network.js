@@ -45,11 +45,17 @@ export const getConnectionsApi = async () => {
   return response.data;
 };
 
+export const getSentInvitationsApi = async () => {
+  const response = await apiClient.get("/api/network/sent-invitations");
+  return response.data;
+};
+
 // --- Custom Hook ---
 
 export const useNetwork = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [sentInvitations, setSentInvitations] = useState([]);
   const [connections, setConnections] = useState([]); // New State
   const [totalConnections, setTotalConnections] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -93,6 +99,22 @@ export const useNetwork = () => {
     } catch (err) {
       console.error("Error fetching connections:", err);
       setError(err.response?.data?.message || "Failed to fetch connections");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchSentInvitations = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getSentInvitationsApi();
+      setSentInvitations(data);
+    } catch (err) {
+      console.error("Error fetching sent invitations:", err);
+      setError(
+        err.response?.data?.message || "Failed to fetch sent invitations"
+      );
     } finally {
       setLoading(false);
     }
@@ -157,12 +179,14 @@ export const useNetwork = () => {
   return {
     suggestions,
     invitations,
+    sentInvitations,
     connections, // Exported
     totalConnections,
     loading,
     error,
     fetchSuggestions,
     fetchInvitations,
+    fetchSentInvitations,
     fetchConnections, // Exported
     fetchTotalConnections,
     sendInvitation,

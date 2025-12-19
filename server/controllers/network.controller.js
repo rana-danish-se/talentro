@@ -223,6 +223,8 @@ export const getUserInvitations = async (req, res) => {
     const formattedInvitations = [];
 
     for (const invite of invitations) {
+      if (!invite.requester) continue;
+
       const senderProfile = await Profile.findOne({
         userId: invite.requester._id,
       });
@@ -297,6 +299,9 @@ export const getUserConnections = async (req, res) => {
       const connectedUserId = isRequester
         ? connection.recipient
         : connection.requester;
+
+      // Safeguard: skip if for some reason user is connected to themselves
+      if (connectedUserId.toString() === userId.toString()) continue;
 
       const connectedUser = await User.findById(connectedUserId).select("slug");
       const connectedUserProfile = await Profile.findOne({
@@ -396,7 +401,9 @@ export const getSuggestionNetwork = async (req, res) => {
     const candidates = await User.aggregate([
       {
         $match: {
-          _id: { $nin: excludeIds },
+          _id: {
+            $nin: excludeIds.map((id) => new mongoose.Types.ObjectId(id)),
+          },
           isActive: true,
         },
       },
@@ -620,5 +627,53 @@ export const getSuggestionNetwork = async (req, res) => {
       message: "Internal server error",
       error: error.message,
     });
+  }
+};
+// Get invitations sent by the current user
+export const getSentInvitations = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const sentInvitations = await Connection.find({
+      requester: userId,
+      status: "pending",
+    })
+      .populate({
+        path: "recipient",
+        select: "accountType slug",
+      })
+      .sort({ createdAt: -1 });
+
+    const formattedInvitations = [];
+
+    for (const invite of sentInvitations) {
+      if (!invite.recipient) continue;
+
+      const recipientProfile = await Profile.findOne({
+        userId: invite.recipient._id,
+      });
+
+      formattedInvitations.push({
+        _id: invite._id,
+        recipient: {
+          _id: invite.recipient._id,
+          slug: invite.recipient.slug,
+          fullName:
+            recipientProfile?.fullName ||
+            `${recipientProfile?.firstName || ""} ${
+              recipientProfile?.lastName || ""
+            }`.trim() ||
+            "Unknown",
+          headline: recipientProfile?.headline || "",
+          profilePicture: recipientProfile?.profileImage || "",
+        },
+        createdAt: invite.createdAt,
+      });
+    }
+
+    res.status(200).json(formattedInvitations);
+  } catch (error) {
+    console.error("Error getting sent invitations:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

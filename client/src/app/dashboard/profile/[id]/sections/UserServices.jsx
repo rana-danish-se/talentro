@@ -40,7 +40,7 @@ const UserServices = ({ services }) => {
       </div>
 
       <div className="space-y-6">
-        {!services || services.length === 0 ? (
+        {!services || !Array.isArray(services) || services.length === 0 ? (
           <div className="text-center py-12">
             <Briefcase className="w-16 h-16 mx-auto text-gray-600 mb-4" />
             <p className="text-gray-400">No services added yet.</p>

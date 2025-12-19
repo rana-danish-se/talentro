@@ -73,6 +73,8 @@ export const search = async (req, res) => {
             { headline: searchRegex },
             { industry: searchRegex },
             { about: searchRegex },
+            { "location.city": searchRegex },
+            { "location.country": searchRegex },
           ],
         });
       }
@@ -177,6 +179,8 @@ export const search = async (req, res) => {
             { category: searchRegex },
             { skillsRequired: searchRegex },
             { servicesOffered: searchRegex },
+            { "location.city": searchRegex },
+            { "location.country": searchRegex },
           ],
         });
       }
@@ -252,7 +256,9 @@ export const search = async (req, res) => {
       // Fetch poster profiles
       if (jobs.length > 0) {
         const userIds = jobs.map((j) => j.userId._id);
-        const profiles = await Profile.find({ userId: { $in: userIds } }).lean();
+        const profiles = await Profile.find({
+          userId: { $in: userIds },
+        }).lean();
         const profileMap = {};
         profiles.forEach((p) => (profileMap[p.userId.toString()] = p));
 
@@ -275,6 +281,8 @@ export const search = async (req, res) => {
             { description: searchRegex },
             { category: searchRegex },
             { requirements: searchRegex },
+            { "location.city": searchRegex },
+            { "location.country": searchRegex },
           ],
         });
       }
@@ -334,7 +342,9 @@ export const search = async (req, res) => {
       // Fetch service provider profiles
       if (services.length > 0) {
         const userIds = services.map((s) => s.userId._id);
-        const profiles = await Profile.find({ userId: { $in: userIds } }).lean();
+        const profiles = await Profile.find({
+          userId: { $in: userIds },
+        }).lean();
         const profileMap = {};
         profiles.forEach((p) => (profileMap[p.userId.toString()] = p));
 
@@ -363,17 +373,27 @@ export const search = async (req, res) => {
         _relevance:
           calculateRelevance(p.firstName, q) +
           calculateRelevance(p.lastName, q) +
-          calculateRelevance(p.headline, q) * 2,
+          calculateRelevance(p.headline, q) * 2 +
+          calculateRelevance(p.location?.city, q) * 1.5 +
+          calculateRelevance(p.location?.country, q),
       }));
 
       results.jobs = results.jobs.map((j) => ({
         ...j,
-        _relevance: calculateRelevance(j.title, q) * 3 + calculateRelevance(j.description, q),
+        _relevance:
+          calculateRelevance(j.title, q) * 3 +
+          calculateRelevance(j.description, q) +
+          calculateRelevance(j.location?.city, q) * 2 +
+          calculateRelevance(j.location?.country, q),
       }));
 
       results.services = results.services.map((s) => ({
         ...s,
-        _relevance: calculateRelevance(s.name, q) * 3 + calculateRelevance(s.description, q),
+        _relevance:
+          calculateRelevance(s.name, q) * 3 +
+          calculateRelevance(s.description, q) +
+          calculateRelevance(s.location?.city, q) * 2 +
+          calculateRelevance(s.location?.country, q),
       }));
 
       // Sort by relevance
@@ -529,13 +549,18 @@ export const searchSuggestions = async (req, res) => {
 // Get filter options
 export const getFilterOptions = async (req, res) => {
   try {
-    const [industries, categories, skills, cities, countries] = await Promise.all([
-      Profile.distinct("industry").then((data) => data.filter(Boolean)),
-      Service.distinct("category").then((data) => data.filter(Boolean)),
-      Skill.distinct("name").then((data) => data.filter(Boolean).slice(0, 100)),
-      Profile.distinct("location.city").then((data) => data.filter(Boolean)),
-      Profile.distinct("location.country").then((data) => data.filter(Boolean)),
-    ]);
+    const [industries, categories, skills, cities, countries] =
+      await Promise.all([
+        Profile.distinct("industry").then((data) => data.filter(Boolean)),
+        Service.distinct("category").then((data) => data.filter(Boolean)),
+        Skill.distinct("name").then((data) =>
+          data.filter(Boolean).slice(0, 100)
+        ),
+        Profile.distinct("location.city").then((data) => data.filter(Boolean)),
+        Profile.distinct("location.country").then((data) =>
+          data.filter(Boolean)
+        ),
+      ]);
 
     return res.status(200).json({
       success: true,

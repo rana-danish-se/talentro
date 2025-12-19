@@ -70,7 +70,10 @@ export const getUserBySlug = async (req, res) => {
     const skills = await Skill.find({ userId: user._id });
 
     // Fetch user's services
-    const services = await Service.find({ userId: user._id });
+    const services = await Service.find({ userId: user._id }).sort({
+      createdAt: -1,
+    });
+    console.log(`Fetched ${services.length} services for user ${user._id}`);
 
     // Fetch user's experiences
     const experiences = await Experience.find({ userId: user._id }).sort({

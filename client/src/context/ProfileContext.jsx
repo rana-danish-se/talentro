@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from "react";
 import apiClient from "../api/apiClient";
-import { useAuth } from "./Authentication"; 
+import { useAuth } from "./Authentication";
 import { toast } from "react-toastify";
 
 const ProfileContext = createContext();
@@ -80,6 +80,17 @@ export const ProfileProvider = ({ children }) => {
     }
   }, []);
 
+  const [services, setServices] = useState([]);
+
+  const fetchServices = useCallback(async () => {
+    try {
+      const response = await apiClient.get("/api/services");
+      setServices(response.data.data);
+    } catch (err) {
+      console.error("Error fetching services:", err);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchProfile();
@@ -87,6 +98,7 @@ export const ProfileProvider = ({ children }) => {
       fetchExperience();
       fetchProjects();
       fetchSkills();
+      fetchServices();
     } else {
       setProfile(null);
       setLoading(false);
@@ -98,6 +110,7 @@ export const ProfileProvider = ({ children }) => {
     fetchExperience,
     fetchProjects,
     fetchSkills,
+    fetchServices,
   ]);
 
   const updateProfile = async (profileData) => {
@@ -400,6 +413,58 @@ export const ProfileProvider = ({ children }) => {
     }
   };
 
+  const addService = async (serviceData) => {
+    try {
+      setLoading(true);
+      const response = await apiClient.post("/api/services", serviceData);
+      setServices((prev) => [response.data.data, ...prev]);
+      return { success: true, data: response.data.data };
+    } catch (err) {
+      console.error("Error adding service:", err);
+      const errorMessage =
+        err.response?.data?.message || "Failed to add service";
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateService = async (id, serviceData) => {
+    try {
+      setLoading(true);
+      const response = await apiClient.put(`/api/services/${id}`, serviceData);
+      setServices((prev) =>
+        prev.map((service) =>
+          service._id === id ? response.data.data : service
+        )
+      );
+      return { success: true, data: response.data.data };
+    } catch (err) {
+      console.error("Error updating service:", err);
+      const errorMessage =
+        err.response?.data?.message || "Failed to update service";
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteService = async (id) => {
+    try {
+      setLoading(true);
+      await apiClient.delete(`/api/services/${id}`);
+      setServices((prev) => prev.filter((service) => service._id !== id));
+      return { success: true };
+    } catch (err) {
+      console.error("Error deleting service:", err);
+      const errorMessage =
+        err.response?.data?.message || "Failed to delete service";
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateProject = async (id, projectData) => {
     try {
       setLoading(true);
@@ -472,6 +537,11 @@ export const ProfileProvider = ({ children }) => {
     addSkill,
     updateSkill,
     deleteSkill,
+    services,
+    fetchServices,
+    addService,
+    updateService,
+    deleteService,
   };
 
   return (

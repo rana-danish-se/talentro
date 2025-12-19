@@ -5,6 +5,8 @@ import NotificationPermissionBanner from "@/components/NotificationPermissionBan
 import { useOneSignal } from "@/hooks/useOneSignal";
 import { useAuth } from "@/context/Authentication";
 
+import { NotificationProvider } from "@/context/NotificationContext";
+
 export default function DashboardLayout({ children }) {
   const { user } = useAuth();
 
@@ -12,10 +14,10 @@ export default function DashboardLayout({ children }) {
   useOneSignal(user?._id);
 
   return (
-    <>
+    <NotificationProvider>
       <NotificationPermissionBanner />
       <DashboardNavbar />
       {children}
-    </>
+    </NotificationProvider>
   );
 }

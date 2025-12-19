@@ -19,15 +19,22 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/Authentication";
+import { useNotifications } from "@/context/NotificationContext";
 
 const NotificationsPage = () => {
   const { user } = useAuth();
+  const {
+    unreadCount,
+    decrementUnreadCount,
+    clearUnreadCount,
+    fetchUnreadCount,
+  } = useNotifications();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filter, setFilter] = useState("all");
-  const [unreadCount, setUnreadCount] = useState(0);
+  // const [unreadCount, setUnreadCount] = useState(0); // Removed local state
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const observerTarget = useRef(null);
 
@@ -73,7 +80,7 @@ const NotificationsPage = () => {
         setNotifications((prev) => [...prev, ...data.data]);
       }
 
-      setUnreadCount(data.unreadCount || 0);
+      // setUnreadCount(data.unreadCount || 0); // Context handles this
       setHasMore(data.pagination.page < data.pagination.pages);
       setLoading(false);
     } catch (error) {
@@ -135,7 +142,7 @@ const NotificationsPage = () => {
           notif._id === notificationId ? { ...notif, isRead: true } : notif
         )
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      decrementUnreadCount();
     } catch (error) {
       console.error("Error marking notification as read:", error);
     }
@@ -184,7 +191,7 @@ const NotificationsPage = () => {
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, isRead: true }))
       );
-      setUnreadCount(0);
+      clearUnreadCount();
     } catch (error) {
       console.error("Error marking all as read:", error);
     }
@@ -195,6 +202,9 @@ const NotificationsPage = () => {
     // Mark as clicked
     if (!notification.isClicked) {
       await markAsClicked(notification._id);
+      if (!notification.isRead) {
+        decrementUnreadCount();
+      }
     }
 
     // Build target URL

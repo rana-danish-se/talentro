@@ -20,12 +20,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { useProfile } from "@/context/ProfileContext";
 import { useAuth } from "@/context/Authentication";
 
+import { useNotifications } from "@/context/NotificationContext";
+
 const DashboardNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter(); // Initialize router
   const pathname = usePathname();
   const { profile } = useProfile();
   const { logout } = useAuth();
+  const { unreadCount } = useNotifications();
 
   const navItems = [
     { name: "Home", href: "/dashboard", icon: Home },
@@ -79,13 +82,20 @@ const DashboardNavbar = () => {
                         : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                     }`}
                   >
-                    <Icon
-                      className={`w-6 h-6 mb-1 transition-colors duration-300 ${
-                        active
-                          ? "text-purple-600 dark:text-purple-400"
-                          : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
-                      }`}
-                    />
+                    <div className="relative">
+                      <Icon
+                        className={`w-6 h-6 mb-1 transition-colors duration-300 ${
+                          active
+                            ? "text-purple-600 dark:text-purple-400"
+                            : "text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                        }`}
+                      />
+                      {item.name === "Notifications" && unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className={`text-xs font-medium transition-colors duration-300 ${
                         active
@@ -210,13 +220,20 @@ const DashboardNavbar = () => {
                           : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
                       }`}
                     >
-                      <Icon
-                        className={`w-5 h-5 ${
-                          active
-                            ? "text-purple-600 dark:text-purple-400"
-                            : "text-gray-600 dark:text-gray-400"
-                        }`}
-                      />
+                      <div className="relative">
+                        <Icon
+                          className={`w-5 h-5 ${
+                            active
+                              ? "text-purple-600 dark:text-purple-400"
+                              : "text-gray-600 dark:text-gray-400"
+                          }`}
+                        />
+                        {item.name === "Notifications" && unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                            {unreadCount > 99 ? "99+" : unreadCount}
+                          </span>
+                        )}
+                      </div>
                       <span
                         className={`font-medium ${
                           active
