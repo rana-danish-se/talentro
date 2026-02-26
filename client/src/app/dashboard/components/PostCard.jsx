@@ -263,12 +263,14 @@ const PostCard = ({ post, user }) => {
               }`}
             >
               {post.content.media.map((media, index) => (
-                <img
-                  key={index}
-                  src={media.url}
-                  alt={`Post media ${index + 1}`}
-                  className="w-full h-auto max-h-96 object-cover"
-                />
+                <div key={index} className="w-full relative aspect-square bg-neutral-100 dark:bg-neutral-900 animate-pulse-light">
+                  <img
+                    src={media.url}
+                    alt={`Post media ${index + 1}`}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
               ))}
             </div>
           ) : (

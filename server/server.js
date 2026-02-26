@@ -56,7 +56,7 @@ app.use(
         return callback(null, true);
       }
       console.log("Rejected origin:", origin);
-      return callback(new Error("Not allowed by CORS"));
+      return callback(null, false);
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

@@ -156,22 +156,37 @@ export const searchUsers = async (req, res) => {
     }
 
     // Process User matches (fetch their profiles if not already in map)
+    const pendingUserIds = [];
     for (const u of users) {
       const uId = u._id.toString();
       if (uId === currentUserId) continue;
       if (userMap.has(uId)) continue; // Already added via profile match
+      pendingUserIds.push(u._id);
+    }
 
-      const p = await Profile.findOne({ userId: u._id });
-      if (p) {
-        userMap.set(uId, {
-          _id: u._id,
-          firstName: p.firstName,
-          lastName: p.lastName,
-          username: u.slug,
-          email: u.email,
-          profileImage: p.profileImage,
-          headline: p.headline,
-        });
+    if (pendingUserIds.length > 0) {
+      const pendingProfiles = await Profile.find({ userId: { $in: pendingUserIds } });
+      const pendingProfileMap = new Map();
+      for (const p of pendingProfiles) {
+         pendingProfileMap.set(p.userId.toString(), p);
+      }
+
+      for (const u of users) {
+        const uId = u._id.toString();
+        if (pendingUserIds.some(id => id.toString() === uId)) {
+          const p = pendingProfileMap.get(uId);
+          if (p) {
+            userMap.set(uId, {
+              _id: u._id,
+              firstName: p.firstName,
+              lastName: p.lastName,
+              username: u.slug,
+              email: u.email,
+              profileImage: p.profileImage,
+              headline: p.headline,
+            });
+          }
+        }
       }
     }
 

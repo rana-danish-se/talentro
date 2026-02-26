@@ -87,7 +87,6 @@ export const useNetwork = () => {
     setError(null);
     try {
       const data = await getInvitationsApi();
-      console.log(data);
       setInvitations(data);
     } catch (err) {
       console.error("Error fetching invitations:", err);

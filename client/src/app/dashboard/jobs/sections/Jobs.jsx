@@ -183,9 +183,34 @@ const JobsSection = () => {
   };
 
   if (loading) {
+
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div>
+            <div className="h-8 w-48 bg-neutral-800 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-72 bg-neutral-800/50 rounded animate-pulse"></div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="w-full bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 flex flex-col md:flex-row gap-6 animate-pulse">
+              <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl bg-neutral-800 flex-shrink-0"></div>
+              <div className="flex-1 space-y-4">
+                <div className="h-6 w-3/4 bg-neutral-800 rounded"></div>
+                <div className="flex gap-4">
+                  <div className="h-4 w-24 bg-neutral-800/50 rounded"></div>
+                  <div className="h-4 w-32 bg-neutral-800/50 rounded"></div>
+                </div>
+                <div className="h-10 w-full bg-neutral-800/50 rounded"></div>
+              </div>
+              <div className="md:w-64 flex flex-col gap-4">
+                <div className="h-6 w-20 bg-neutral-800 rounded ml-auto"></div>
+                <div className="h-6 w-24 bg-neutral-800/50 rounded ml-auto mt-auto"></div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

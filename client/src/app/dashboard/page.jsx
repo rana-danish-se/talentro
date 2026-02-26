@@ -26,19 +26,23 @@ const DashboardPage = () => {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
+      <main className="p-6 flex flex-row items-start justify-center w-full min-h-screen bg-white dark:bg-neutral-950 animate-pulse">
+        {/* Profile Card Skeleton */}
+        <div className="hidden lg:block w-72 h-[400px] bg-neutral-200 dark:bg-neutral-800 rounded-xl mr-6" />
+        
+        <section className="max-w-2xl w-full mx-auto space-y-4">
+          {/* Post Creation Skeleton */}
+          <div className="w-full h-32 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+          
+          {/* Feed Skeletons */}
+          <div className="w-full h-64 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+          <div className="w-full h-64 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+          <div className="w-full h-64 bg-neutral-200 dark:bg-neutral-800 rounded-xl" />
+        </section>
+      </main>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (

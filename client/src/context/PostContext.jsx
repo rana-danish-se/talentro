@@ -29,7 +29,6 @@ export const PostProvider = ({ children }) => {
       setLoading(true);
       const response = await apiClient.get("/api/feed");
       if (response.data.success) {
-        console.log("Feed Posts:", response.data.data);
         setFeedPosts(response.data.data);
       }
     } catch (err) {
@@ -67,9 +66,7 @@ export const PostProvider = ({ children }) => {
         );
 
         if (response.data.success) {
-          console.log(response);
           const newPost = response.data.data;
-          console.log("New Post:", newPost);
           setPosts((prevPosts) => [newPost, ...prevPosts]);
           setFeedPosts((prevFeed) => [newPost, ...prevFeed]);
           toast.success("Post created successfully!");

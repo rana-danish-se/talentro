@@ -439,7 +439,7 @@ export const getFeed = async (req, res) => {
       isActive: true,
     })
       .sort({ createdAt: -1 })
-      .limit(30);
+      .limit(15);
 
     remainingPosts = shuffleArray(remainingPosts);
 
@@ -449,7 +449,7 @@ export const getFeed = async (req, res) => {
       isActive: true,
     })
       .sort({ createdAt: -1 })
-      .limit(20);
+      .limit(10);
 
     // 8. COMBINE ALL POSTS IN PRIORITY ORDER
     let allPosts = [

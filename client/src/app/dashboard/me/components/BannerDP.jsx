@@ -68,7 +68,6 @@ const BannerDP = () => {
       const result = await updateProfileImage(file);
       if (result.success) {
         setIsModalOpen(false);
-        console.log("Profile image updated successfully");
       } else {
         console.error("Failed to update profile image");
       }
